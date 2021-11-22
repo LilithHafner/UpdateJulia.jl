@@ -3,11 +3,8 @@ uuid = "770da0de-323d-4d28-9202-0e205c1e0aff"
 authors = ["Lilith Orion Hafner <60898866+LilithHafner@users.noreply.github.com> and contributors"]
 version = "0.0.0"
 
-[deps]
-Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
-
 [compat]
-julia = "1.0"
+julia = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

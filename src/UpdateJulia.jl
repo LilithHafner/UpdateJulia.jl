@@ -2,8 +2,6 @@ module UpdateJulia
 
 export update_julia
 
-using Downloads
-
 """
     update_julia(v::VersionNumber; set_as_default = false)
 
@@ -56,7 +54,8 @@ function update_julia(v::VersionNumber; set_as_default = false)
 
     mm = "$(v.major).$(v.minor)"
 
-    file = Downloads.download("https://julialang-s3.julialang.org/bin/mac/x64/$mm/julia-$v-mac64.dmg")
+    # use download instead of Downloads.download for backwards compatability
+    file = download("https://julialang-s3.julialang.org/bin/mac/x64/$mm/julia-$v-mac64.dmg")
     try
         run(`hdiutil attach $file`)
         try
