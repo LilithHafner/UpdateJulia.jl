@@ -88,7 +88,7 @@ function test(command, version)
         @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
     catch
         printstyled("Failed to alias $command to Julia version $version. Results of `which -a $command`:\n", color=:red)
-        pipeline(`which -a $command`, stdout)
+        run(`which -a $command`)
         rethrow()
     end
 end
