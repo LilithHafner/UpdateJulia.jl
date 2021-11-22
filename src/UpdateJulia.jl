@@ -3,7 +3,6 @@ module UpdateJulia
 export update_julia
 
 using Downloads
-using Test
 
 """
     update_julia(v::VersionNumber; set_as_default = false)
@@ -64,12 +63,12 @@ function update_julia(v::VersionNumber; set_as_default = false)
             cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
             # Because force is not available via Base.symlink
             run(`ln -sf /Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia /usr/local/bin/julia-$mm`)
-            @test open(f->read(f, String), `julia-$mm -v`) == "julia version $v\n"
+            test("julia-$mm", v)
 
             if set_as_default
                 # Because force is not available via Base.symlink
                 run(`ln -sf /Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia /usr/local/bin/julia`)
-                @test open(f->read(f, String), `julia -v`) == "julia version $v\n"
+                test("julia", v)
             end
         finally
             run(`hdiutil detach /Volumes/Julia-$v`)
@@ -82,6 +81,16 @@ function update_julia(v::VersionNumber; set_as_default = false)
         printstyled("Success! julia and julia-$mm now to point to $v\n", color=:green)
     else
         printstyled("Success! julia-$mm now to points to $v\n", color=:green)
+    end
+end
+
+function test(command, version)
+    try
+        @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
+    catch
+        printstyled("Failed to alias $command to Julia version $version. Results of `which -a $command`:\n", color=:red)
+        pipeline(`which -a $command`, stdout)
+        rethrow()
     end
 end
 

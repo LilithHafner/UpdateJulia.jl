@@ -12,5 +12,6 @@ using Test
     update_julia(v"1.6.4")
     update_julia(v"1.6.4", set_as_default=true)
     update_julia(v"1.6.4", set_as_default=true)
-
+    @test true
+    
 end
