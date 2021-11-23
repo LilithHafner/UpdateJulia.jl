@@ -60,14 +60,10 @@ function update_julia(v::VersionNumber; set_as_default = false)
         run(`hdiutil attach $file`)
         try
             cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-            # Because force is not available via Base.symlink
-            run(`ln -sf /Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia /usr/local/bin/julia-$mm`)
-            test("julia-$mm", v)
 
+            link("/Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia", "julia-$mm", v)
             if set_as_default
-                # Because force is not available via Base.symlink
-                run(`ln -sf /Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia /usr/local/bin/julia`)
-                test("julia", v)
+                link("/Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia", "julia", v)
             end
         finally
             run(`hdiutil detach /Volumes/Julia-$v`)
@@ -83,14 +79,30 @@ function update_julia(v::VersionNumber; set_as_default = false)
     end
 end
 
-function test(command, version)
+function link(source, command, version)
+    # Because force is not available via Base.symlink
+    run(`ln -sf $source /usr/local/bin/$command`)
     try
-        @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
+        test(command, version)
     catch
-        printstyled("Failed to alias $command to Julia version $version. Results of `which -a $command`:\n", color=:red)
+        printstyled("Failed to alias $command to Julia version $version. Results of `which -a $command`:\n", color=Base.warn_color())
         run(`which -a $command`)
-        rethrow()
+
+        target = strip(open(x -> read(x, String), `which $command`))
+        if target == "$command not found"
+            printstyled("Perhaps /usr/local/bin/ is not in your paths (on mac your paths are located at /etc/paths), giving up.", color=Base.error_color())
+            rethrow()
+        else
+            printstyled("Additionally linking to $target\n", color=Base.info_color())
+            run(`ln -sf $source $target`)
+
+            test(command, version)
+        end
     end
+end
+
+function test(command, version)
+    @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
 end
