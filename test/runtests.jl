@@ -3,6 +3,7 @@ using Test
 
 @testset "UpdateJulia.jl" begin
 
+    printstyled("WARNING: this will both install out of date julia versions and change what the command `julia` points to.\n", color=Base.warn_color())
     update_julia(v"1.2", set_as_default=true)
     update_julia(v"1.0.0")
     update_julia(v"1.0.5")
@@ -13,5 +14,5 @@ using Test
     update_julia(v"1.6.4", set_as_default=true)
     update_julia(v"1.6.4", set_as_default=true)
     @test true
-    
+
 end
