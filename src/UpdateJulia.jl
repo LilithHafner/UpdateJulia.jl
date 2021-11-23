@@ -163,7 +163,8 @@ else
     error("Unknown OS")
 end
 
-arch = "x86_64"
-@warn "If your CPU archetecture is not x86_64, you must manually change UpdateJulia.arch"
+arch = Sys.WORD_SIZE == 64 ? "x86_64" : "i686"
+@warn "If your CPU archetecture is not $arch, you must manually change UpdateJulia.arch
+Recommended values: \"x86_64\", \"i686\", \"aarch64\", \"armv7l\", and \"powerpc64le\""
 
 end
