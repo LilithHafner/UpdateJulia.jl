@@ -77,7 +77,7 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
         else
             mkpath("/opt/julias")
-            run(`tar zxvf $file -C /opt/julias`)
+            run(`tar zxf $file -C /opt/julias`)
             download = "/opt/julias/julia-$v"
         end
         try
