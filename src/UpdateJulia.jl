@@ -71,16 +71,23 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
 
     # use download instead of Downloads.download for backwards compatability
     download_delete(url) do file
-        run(`hdiutil attach $file`)
-        try
+        @static if Sys.isapple()
+            run(`hdiutil attach $file`)
             cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-
-            link("/Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia", "julia-$mm", v)
+            download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
+        else
+            run(`tar zxvf $file -C /opt/julias`)
+            download = "/opt/julias/julia-$v"
+        end
+        try
+            link("$download/bin/julia", "julia-$mm", v)
             if set_as_default
-                link("/Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia", "julia", v)
+                link("$download/bin/julia", "julia", v)
             end
         finally
-            run(`hdiutil detach /Volumes/Julia-$v`)
+            @static if Sys.isapple()
+                run(`hdiutil detach /Volumes/Julia-$v`)
+            end
         end
     end
 
