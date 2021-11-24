@@ -86,6 +86,9 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
         end
         try
             link("$download/bin/julia", "julia-$mm", v)
+            @static if Sys.islinux() # Linux conventions call for installing patch releasess
+                link("$download/bin/julia", "julia-$v", v) # paralell to eachother, while
+            end # mac overwrites 1.6.1 with 1.6.4 which would break this.
             if set_as_default
                 link("$download/bin/julia", "julia", v)
             end
