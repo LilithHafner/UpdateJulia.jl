@@ -77,6 +77,7 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
         elseif Sys.iswindows() #nested ifs are worse than non-static branching.
             printstyled("=== Before line 80 ===\n", color=:purple)
+            display(isfile($file))
             run(`$file`)
             printstyled("=== After line 80 ===\n", color=:purple)
         else
