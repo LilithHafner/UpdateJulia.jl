@@ -56,7 +56,8 @@ julia>
 function update_julia(version::AbstractString=""; set_as_default = version=="")
     vs = latest(version)
     files = versions[vs]["files"]
-    url = files[findfirst(x -> x["os"] == os && x["arch"] == arch, files)]["url"]
+    mask(x) = x["os"] == os && x["arch"] == arch && (@static Sys.iswindows() ? x["kind"] != "installer" : true)
+    url = files[findfirst(mask, files)]["url"]
     v = VersionNumber(vs)
     latest_v = VersionNumber(latest())
     version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
@@ -74,11 +75,14 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
         @static if Sys.isapple()
             run(`hdiutil attach $file`)
             cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-            download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
+            download = "/Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia"
         elseif Sys.iswindows() #nested ifs are worse than non-static branching.
             printstyled("=== Before line 80 ===\n", color=:purple)
-            display(isfile("$file"))
-            run(`$file`)
+            println(isfile("$file"))
+            #run(`$file`)
+            download = "$(homedir())\\AppData\\Local\\Programs\\Julia 1.6.4"
+            run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$file', '$download'); }"`)
+            println(isdir("$download"))
             printstyled("=== After line 80 ===\n", color=:purple)
         else
             mkpath("/opt/julias")
@@ -86,12 +90,13 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             download = "/opt/julias/julia-$v"
         end
         try
-            link("$download/bin/julia", "julia-$mm", v)
+            executable = joinpath(download, "bin", @static Sys.iswindows() ? "julia.exe" : "julia")
+            link(executable, "julia-$mm", v)
             @static if Sys.islinux() # Linux conventions call for installing patch releasess
-                link("$download/bin/julia", "julia-$v", v) # paralell to eachother, while
+                link(executable, "julia-$v", v) # paralell to eachother, while
             end # mac overwrites 1.6.1 with 1.6.4 which would break this.
             if set_as_default
-                link("$download/bin/julia", "julia", v)
+                link(executable, "julia", v)
             end
         finally
             @static if Sys.isapple()
