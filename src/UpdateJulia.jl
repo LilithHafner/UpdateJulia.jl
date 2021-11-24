@@ -75,6 +75,10 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             run(`hdiutil attach $file`)
             cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
             download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
+        elseif Sys.windows() #nested ifs are worse than non-static branching.
+            printstyled("=== Before line 80 ===\n", color=:purple)
+            run(`$file`)
+            printstyled("=== After line 80 ===\n", color=:purple)
         else
             mkpath("/opt/julias")
             run(`tar zxf $file -C /opt/julias`)
