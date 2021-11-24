@@ -129,6 +129,7 @@ function link(source, command, version)
             test(command, version)
         end
     end
+    println("Linked $command to $version stored at $source")
 end
 
 function test(command, version)
