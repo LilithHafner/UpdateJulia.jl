@@ -7,7 +7,7 @@ using Test
     printstyled("If all goes well, it will finish with the latest stable version of julia installed.\n", color=Base.warn_color())
     @test update_julia("1.4", set_as_default=true) == v"1.4.2"
     @test update_julia("1.2", set_as_default=true) == v"1.2.0"
-    @test update_julia("1.0.5") == v"1.0.5"
+    @test update_julia("1.0.4") == v"1.0.4"
     @test update_julia("1.0.0") == v"1.0.0"
     global v10_latest = update_julia("1.0")
     @test v10_latest >= v"1.0.5" && v10_latest < v"1.1.0"
