@@ -84,7 +84,6 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
         return v
     end
 
-    # use download instead of Downloads.download for backwards compatability
     download_delete(url) do file
         @static if Sys.isapple()
             run(`hdiutil attach $file`)
@@ -184,7 +183,8 @@ function latest(prefix="")
 end
 
 function download_delete(f, url)
-    file = download(url)
+    # use download instead of Downloads.download for backwards compatability
+    @suppress_err file = download(url)
     try
         f(file)
     finally
