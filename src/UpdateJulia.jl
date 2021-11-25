@@ -200,19 +200,10 @@ end
 
 function symlink_replace(target, bin, command)
     # Because force is not available via Base.symlink
-    link = joinpath(bin, command)
-    if command ∈ readdir(bin)
-        t = tempname()
-        mv(link, t)
-        try
-            symlink(target, link)
-            rm(t)
-        catch
-            mv(t, link)
-            rethrow()
-        end
+    @static if Sys.iswindows
+        run(`cmd.exe -nologo -noprofile /c "mklink /H $(joinpath(bin, command)) $target"`)
     else
-        symlink(target, link)
+        run(`ln -sf $target $(joinpath(bin, command))`)
     end
 end
 
