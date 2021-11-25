@@ -58,7 +58,7 @@ function update_julia(version::AbstractString="";
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
     for command in commands
-        link(executable, joinpath(bin, command), set_default, v)
+        link(executable, bin, command, set_default, v)
     end
 
     printstyled("Success! \`$(join(commands, "\` & \`"))\` now to point to $v\n", color=:green)
@@ -187,7 +187,8 @@ function ensure_bin(bin)
 end
 
 ## Link ##
-function link(executable, link, set_default, v)
+function link(executable, bin, command, set_default, v)
+    link = joinpath(bin, command)
     symlink_replace(executable, link)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
