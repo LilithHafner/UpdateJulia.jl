@@ -55,11 +55,6 @@ julia>
 
 function update_julia(version::AbstractString=""; set_as_default = version=="")
     vs = latest(version)
-    files = versions[vs]["files"]
-    mask(x) = x["os"] == os && x["arch"] == arch && (@static Sys.iswindows() ? x["kind"] != "installer" : true)
-    index = findfirst(mask, files)
-    index === nothing && error("No valid download for $vs matching $os and $arch options:\n$files")
-    url = files[index]["url"]
     v = VersionNumber(vs)
     latest_v = VersionNumber(latest())
     version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
@@ -71,6 +66,22 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     end
 
     mm = "$(v.major).$(v.minor)"
+
+    files = versions[vs]["files"]
+    index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] != "installer", files)
+    if index === nothing
+        index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] == "installer", files)
+        use_installer = true
+    end
+    index === nothing && error("No valid download for $vs matching $os and $arch")
+    url = files[index]["url"]
+
+    if use_installer
+        (@static Sys.iswindows() && v < v"1.5.0-rc2") ||  @warn "Unexpected use of a manual installer"
+        println("An manual installer was available but not an archive. Lanuching the manual installer now:")
+        download_delete(run, url)
+        return v
+    end
 
     # use download instead of Downloads.download for backwards compatability
     download_delete(url) do file
