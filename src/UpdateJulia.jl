@@ -56,15 +56,6 @@ julia>
 function update_julia(version::AbstractString=""; set_as_default = version=="")
     vs = latest(version)
     v = VersionNumber(vs)
-    latest_v = VersionNumber(latest())
-    version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
-    printstyled("installing julia $v from $url\n", color = version_color)
-    if v > latest_v
-        printstyled("This version is un-released. The latest official release is $latest_v\n", color = version_color)
-    elseif v < latest_v
-        printstyled("This version is out of date. The latest official release is $latest_v\n", color = version_color)
-    end
-
     mm = "$(v.major).$(v.minor)"
 
     files = versions[vs]["files"]
@@ -75,6 +66,15 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     end
     index === nothing && error("No valid download for $vs matching $os and $arch")
     url = files[index]["url"]
+
+    latest_v = VersionNumber(latest())
+    version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
+    printstyled("installing julia $v from $url\n", color = version_color)
+    if v > latest_v
+        printstyled("This version is un-released. The latest official release is $latest_v\n", color = version_color)
+    elseif v < latest_v
+        printstyled("This version is out of date. The latest official release is $latest_v\n", color = version_color)
+    end
 
     if use_installer
         (@static Sys.iswindows() && v < v"1.5.0-rc2") ||  @warn "Unexpected use of a manual installer"
