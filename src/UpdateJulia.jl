@@ -2,7 +2,7 @@ module UpdateJulia
 
 export update_julia
 
-using JSON
+using JSON, Suppressor
 
 """
     update_julia(v::VersionNumber; set_as_default = false)
@@ -184,7 +184,7 @@ end
 
 function download_delete(f, url)
     # use download instead of Downloads.download for backwards compatability
-    @suppress_err file = download(url)
+    file = @suppress_err download(url)
     try
         f(file)
     finally
