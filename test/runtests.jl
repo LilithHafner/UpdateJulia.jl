@@ -20,6 +20,8 @@ using Test
     global v_latest = update_julia()
     @test v_latest == VersionNumber(UpdateJulia.latest())
     @test v_latest >= v"1.6.4" && v_latest.prerelease == ()
+    global v_nightly = update_julia("nightly")
+    @test v_nightly >= v"1.8-DEV" && v_nightly > v_latest && v_nightly.prerelease == ("DEV",)
 
 end
 

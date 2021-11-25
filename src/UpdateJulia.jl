@@ -54,41 +54,56 @@ julia>
 """
 
 function update_julia(version::AbstractString=""; set_as_default = version=="")
-    vs = latest(version)
-    v = VersionNumber(vs)
-    mm = "$(v.major).$(v.minor)"
+    # Find source
+    if version == "nightly"
+        arch_dir = arch == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
+        arch_append = arch == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
+        extension = Sys.isapple() ? "dmg" : (Sys.iswindows() ? "zip" : "tar.gz")
+        url = "https://julialangnightlies-s3.julialang.org/bin/$os/$arch_dir/julia-latest-$os$arch_append.$extension"
+        v = nothing
+    else
+        vs = latest(version)
+        v = VersionNumber(vs)
+        mm = "$(v.major).$(v.minor)"
 
-    use_installer = false
-    files = versions[vs]["files"]
-    index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] != "installer", files)
-    if index === nothing
-        index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] == "installer", files)
-        use_installer = true
+        use_installer = false
+        files = versions[vs]["files"]
+        index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] != "installer", files)
+        if index === nothing
+            index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] == "installer", files)
+            use_installer = true
+        end
+        index === nothing && error("No valid download for $vs matching $os and $arch")
+        url = files[index]["url"]
+
+        latest_v = VersionNumber(latest())
+        version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
+        printstyled("installing julia $v from $url\n", color = version_color)
+        if v > latest_v
+            printstyled("This version is un-released. The latest official release is $latest_v\n", color = version_color)
+        elseif v < latest_v
+            printstyled("This version is out of date. The latest official release is $latest_v\n", color = version_color)
+        end
+
+        if use_installer
+            (@static Sys.iswindows() && v < v"1.5.0-rc2") ||  @warn "Unexpected use of a manual installer"
+            println("An manual installer was available but not an archive. Lanuching the manual installer now:")
+            download_delete(file->run(`$file`), url)
+            return v
+        end
     end
-    index === nothing && error("No valid download for $vs matching $os and $arch")
-    url = files[index]["url"]
 
-    latest_v = VersionNumber(latest())
-    version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
-    printstyled("installing julia $v from $url\n", color = version_color)
-    if v > latest_v
-        printstyled("This version is un-released. The latest official release is $latest_v\n", color = version_color)
-    elseif v < latest_v
-        printstyled("This version is out of date. The latest official release is $latest_v\n", color = version_color)
-    end
-
-    if use_installer
-        (@static Sys.iswindows() && v < v"1.5.0-rc2") ||  @warn "Unexpected use of a manual installer"
-        println("An manual installer was available but not an archive. Lanuching the manual installer now:")
-        download_delete(file->run(`$file`), url)
-        return v
-    end
-
+    # Install
     download_delete(url) do file
         @static if Sys.isapple()
             run(`hdiutil attach $file`)
-            cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-            download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
+            if v === nothing
+                volumes = unique(first.(split.(filter(x->startswith(x, "Julia-"), readdir("/Volumes")))))
+                @assert !isempty(volumes)
+                v_mount = VersionNumber(last(volumes)[7:end])
+            else
+                v_mount = v
+            end
         elseif Sys.iswindows()
             printstyled("=== Before line 80 ===\n", color=:purple)
             println(isfile("$file"))
@@ -103,7 +118,19 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             download = "/opt/julias/julia-$v"
         end
         try
+            @static if Sys.isapple()
+                if v === nothing
+                    length(volumes) > 1 && error("Can't decide which volume to choose from in /Volumes: $volumes. Perhaps detach them all and try again?")
+                    mm = "$(v_mount.major).$(v_mount.minor)"
+                    cp("/Volumes/Julia-$v_mount/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
+                else
+                    cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
+                end
+                download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
+            end
+
             executable = joinpath(download, "bin", @static Sys.iswindows() ? "julia.exe" : "julia")
+            v === nothing && (v = VersionNumber(strip(open(f->read(f, String), `$executable -v`))[15:end]))
             link(executable, "julia-$mm", v)
             @static if Sys.islinux() # Linux conventions call for installing patch releasess
                 link(executable, "julia-$v", v) # paralell to eachother, while
@@ -113,7 +140,7 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             end
         finally
             @static if Sys.isapple()
-                run(`hdiutil detach /Volumes/Julia-$v`)
+                run(`hdiutil detach /Volumes/Julia-$v_mount`)
             end
         end
     end
@@ -134,7 +161,7 @@ function link(executable, command, version)
         test(command, version)
     catch x
         if x isa AssertionError
-            printstyled("Failed to alias $command to Julia version $version."*
+            printstyled("Failed to alias $command to Julia version $version. "*
             "Results of `which -a $command`: \"", color=Base.warn_color())
             open(`which -a $command`) do io
                 printstyled(strip(read(io, String)), color=Base.info_color())
