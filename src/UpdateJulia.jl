@@ -58,7 +58,7 @@ function update_julia(version::AbstractString="";
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
     for command in commands
-        link(executable, bin, command, set_default, v)
+        link(executable, joinpath(bin, command), set_default, v)
     end
 
     printstyled("Success! \`$(join(commands, "\` & \`"))\` now to point to $v\n", color=:green)
@@ -187,23 +187,22 @@ function ensure_bin(bin)
 end
 
 ## Link ##
-function link(executable, bin, command, set_default, v)
-    symlink_replace(executable, bin, command)
-
+function link(executable, link, set_default, v)
+    symlink_replace(executable, link)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
         link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
         printstyled("Replacing symlink @ $link\n", color=Base.info_color())
-        symlink_replace(executable, bin, command)
+        symlink_replace(executable, link)
     end
 end
 
 function symlink_replace(target, bin, command)
     # Because force is not available via Base.symlink
     @static if Sys.iswindows()
-        run(`cmd.exe -nologo -noprofile /c "mklink /H $(joinpath(bin, command)) $target"`)
+        run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
     else
-        run(`ln -sf $target $(joinpath(bin, command))`)
+        run(`ln -sf $target $link`)
     end
 end
 
