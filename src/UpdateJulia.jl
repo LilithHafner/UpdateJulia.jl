@@ -154,9 +154,9 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     v
 end
 
-function link(executable, command, version)
+function link(executable, command, version, bin=@static Sys.iswindows() ? "C:\\Windows\\System32" : "/usr/local/bin")
     # Because force is not available via Base.symlink
-    run(`ln -sf $executable /usr/local/bin/$command`)
+    run(`ln -sf $executable $(joinpath(bin, command))`)
     try
         test(command, version)
     catch x
@@ -175,7 +175,7 @@ function link(executable, command, version)
             test(command, version)
         else
             printstyled("Unexpected error, Giving up.\n", color=Base.error_color())
-            printstyled("Perhaps /usr/local/bin/ is not in your paths?\n", color=Base.debug_color()) # TODO conditional gaurd on this
+            printstyled("Perhaps $bin is not on your PATH?\n", color=Base.debug_color()) # TODO conditional gaurd on this
             rethrow()
         end
     end
