@@ -121,19 +121,24 @@ function link(source, command, version)
     run(`ln -sf $source /usr/local/bin/$command`)
     try
         test(command, version)
-    catch
-        printstyled("Failed to alias $command to Julia version $version. Results of `which -a $command`:\n", color=Base.warn_color())
-        run(`which -a $command`)
+    catch x
+        if x isa AssertionError
+            printstyled("Failed to alias $command to Julia version $version."*
+            "Results of `which -a $command`: \"", color=Base.warn_color())
+            open(`which -a $command`) do io
+                printstyled(strip(read(io, String)), color=Base.info_color())
+            end
+            printstyled("\"\n", color=Base.warn_color())
 
-        target = strip(open(x -> read(x, String), `which $command`))
-        if target == "$command not found"
-            printstyled("Perhaps /usr/local/bin/ is not in your paths (on mac your paths are located at /etc/paths), giving up.", color=Base.error_color())
-            rethrow()
-        else
+            target = strip(open(x -> read(x, String), `which $command`))
             printstyled("Additionally linking to $target\n", color=Base.info_color())
             run(`ln -sf $source $target`)
 
             test(command, version)
+        else
+            printstyled("Unexpected error, Giving up.\n", color=Base.error_color())
+            printstyled("Perhaps /usr/local/bin/ is not in your paths?\n", color=Base.debug_color()) # TODO conditional gaurd on this
+            rethrow()
         end
     end
     println("Linked $command to $version stored at $source")
