@@ -58,6 +58,7 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     v = VersionNumber(vs)
     mm = "$(v.major).$(v.minor)"
 
+    use_installer = false
     files = versions[vs]["files"]
     index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] != "installer", files)
     if index === nothing
