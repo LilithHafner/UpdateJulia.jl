@@ -99,6 +99,9 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
             run(`hdiutil attach $file`)
             if v === nothing
                 volumes = unique(first.(split.(filter(x->startswith(x, "Julia-"), readdir("/Volumes")))))
+                ver(x) = VersionNumber(join(split(x, '-')[1:2],'-'))
+                mx = maximum(ver.(volumes))
+                volumes = filter(x->ver(x) == mx, volumes)
                 @assert !isempty(volumes)
                 v_mount = VersionNumber(last(volumes)[7:end])
             else
