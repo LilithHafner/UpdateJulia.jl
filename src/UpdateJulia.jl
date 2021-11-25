@@ -116,9 +116,9 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     v
 end
 
-function link(source, command, version)
+function link(executable, command, version)
     # Because force is not available via Base.symlink
-    run(`ln -sf $source /usr/local/bin/$command`)
+    run(`ln -sf $executable /usr/local/bin/$command`)
     try
         test(command, version)
     catch x
@@ -132,7 +132,7 @@ function link(source, command, version)
 
             target = strip(open(x -> read(x, String), `which $command`))
             printstyled("Additionally linking to $target\n", color=Base.info_color())
-            run(`ln -sf $source $target`)
+            run(`ln -sf $executable $target`)
 
             test(command, version)
         else
@@ -141,7 +141,7 @@ function link(source, command, version)
             rethrow()
         end
     end
-    println("Linked $command to $version stored at $source")
+    println("Linked $command to $version stored at $executable")
 end
 
 function test(command, version)
