@@ -197,7 +197,7 @@ function link(executable, link, set_default, v)
     end
 end
 
-function symlink_replace(target, bin, command)
+function symlink_replace(target, link)
     # Because force is not available via Base.symlink
     @static if Sys.iswindows()
         run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
