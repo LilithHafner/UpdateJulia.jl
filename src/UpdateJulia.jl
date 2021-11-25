@@ -75,7 +75,6 @@ function v_url(version_str, os_str, arch_str)
 
         nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_str$arch_append.$extension"
     else
-        fetch()
         v = latest(version_str)
 
         options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
@@ -107,6 +106,7 @@ function fetch(force=false)
 end
 
 function latest(prefix="")
+    fetch()
     kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
     isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
     sort!(kys)
@@ -134,7 +134,7 @@ function prereport(v, url)
     elseif "DEV" ∈ v.prerelease
         printstyled("installing julia $v from $url\n"*
         "This version is an expiremental development build nor reccomended for most users. "*
-        "The latest official release is $(latest_version[])\n", color = :red)
+        "The latest official release is $(latest())\n", color = :red)
     else
         printstyled("installing julia $v from $url\n", color = :yellow)
         printstyled("This version is $(v > latest() ? "un-released" : "out of date"). "*
@@ -171,7 +171,7 @@ function extract(install_location, download_file, v)
         "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
     else
         mkpath("/opt/julias")
-        run(`tar zxf $file -C $install_location`)
+        run(`tar zxf $download_file -C $install_location`)
         "/opt/julias/julia-$v/bin/julia"
     end
 end
