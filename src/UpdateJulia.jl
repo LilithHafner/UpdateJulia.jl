@@ -75,7 +75,7 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
         @static if Sys.isapple()
             run(`hdiutil attach $file`)
             cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-            download = "/Applications/Julia-$mm.app/Contents/Resources/julia/bin/julia"
+            download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
         elseif Sys.iswindows() #nested ifs are worse than non-static branching.
             printstyled("=== Before line 80 ===\n", color=:purple)
             println(isfile("$file"))
