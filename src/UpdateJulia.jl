@@ -9,7 +9,7 @@ macro os(windows, apple=windows, freebsd=apple, linux=freebsd, other=linux)
         windows
     elseif Sys.isapple()
         apple
-    elseif Sys.isfreebsd()
+    elseif @static VERSION >= V"1.1" && Sys.isfreebsd()
         freebsd
     elseif Sys.islinux()
         linux
