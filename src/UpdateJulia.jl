@@ -200,7 +200,7 @@ end
 
 function symlink_replace(target, bin, command)
     # Because force is not available via Base.symlink
-    @static if Sys.iswindows
+    @static if Sys.iswindows()
         run(`cmd.exe -nologo -noprofile /c "mklink /H $(joinpath(bin, command)) $target"`)
     else
         run(`ln -sf $target $(joinpath(bin, command))`)
