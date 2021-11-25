@@ -57,7 +57,9 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     vs = latest(version)
     files = versions[vs]["files"]
     mask(x) = x["os"] == os && x["arch"] == arch && (@static Sys.iswindows() ? x["kind"] != "installer" : true)
-    url = files[findfirst(mask, files)]["url"]
+    index = findfirst(mask, files)
+    index === nothing && error("No valid download for $vs matching $os and $arch options:\n$files")
+    url = files[index]["url"]
     v = VersionNumber(vs)
     latest_v = VersionNumber(latest())
     version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
