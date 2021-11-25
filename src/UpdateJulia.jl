@@ -4,214 +4,145 @@ export update_julia
 
 using JSON, Suppressor
 
-"""
-    update_julia(v::VersionNumber; set_as_default = false)
-
-Install the specified version of julia and link `julia-MAJOR.MINOR` to it.
-
-Optionally also link `julia`
-
-# Examples
-```julia-repl
-julia> update_julia(v"1.6.1")
-[system log...]
-Success! julia-1.6 now to points to 1.6.1
-
-julia> ;
-
-shell> julia-1.6
-               _
-   _       _ _(_)_     |  Documentation: https://docs.julialang.org
-  (_)     | (_) (_)    |
-   _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
-  | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.6.1 (2021-04-23)
- _/ |\\__'_|_|_|\\__'_|  |  Official https://julialang.org/ release
-|__/                   |
-
-julia> ^d
-
-shell> ^C
-
-julia> update_julia(v"1.6.4", set_as_default=true)
-[system log...]
-Success! julia and julia-1.6 now to point to 1.6.4
-
-julia> ;
-
-shell> julia
-               _
-   _       _ _(_)_     |  Documentation: https://docs.julialang.org
-  (_)     | (_) (_)    |
-   _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
-  | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.6.4 (2021-11-19)
- _/ |\\__'_|_|_|\\__'_|  |  Official https://julialang.org/ release
-|__/                   |
-
-julia>
-```
-"""
-
-function update_julia(version::AbstractString=""; set_as_default = version=="")
-    # Find source
-    if version == "nightly"
-        arch_dir = arch == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
-        arch_append = arch == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
-        extension = Sys.isapple() ? "dmg" : (Sys.iswindows() ? "zip" : "tar.gz")
-        url = "https://julialangnightlies-s3.julialang.org/bin/$os/$arch_dir/julia-latest-$os$arch_append.$extension"
-        v = nothing
+macro os(windows, apple=windows, freebsd=apple, linux=freebsd, other=linux)
+    @static if Sys.iswindows()
+        windows
+    elseif Sys.isapple()
+        apple
+    elseif Sys.isfreebsd()
+        freebsd
+    elseif Sys.islinux()
+        linux
     else
-        vs = latest(version)
-        v = VersionNumber(vs)
-        mm = "$(v.major).$(v.minor)"
+        other
+    end
+end
 
-        use_installer = false
-        files = versions[vs]["files"]
-        index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] != "installer", files)
-        if index === nothing
-            index = findfirst(x -> x["os"] == os && x["arch"] == arch && x["kind"] == "installer", files)
-            use_installer = true
-        end
-        index === nothing && error("No valid download for $vs matching $os and $arch")
-        url = files[index]["url"]
+"""
+    update_julia(version::AbstractString="")
 
-        latest_v = VersionNumber(latest())
-        version_color = isempty(v.build) ? (v == latest_v ? :green : :yellow) : :red
-        printstyled("installing julia $v from $url\n", color = version_color)
-        if v > latest_v
-            printstyled("This version is un-released. The latest official release is $latest_v\n", color = version_color)
-        elseif v < latest_v
-            printstyled("This version is out of date. The latest official release is $latest_v\n", color = version_color)
-        end
+Install the latest version of julia from https://julialang.org
 
-        if use_installer
-            (@static Sys.iswindows() && v < v"1.5.0-rc2") ||  @warn "Unexpected use of a manual installer"
-            println("An manual installer was available but not an archive. Lanuching the manual installer now:")
-            download_delete(file->run(`$file`), url)
-            return v
-        end
+If `version` is provided, installs the latest version that starts with `version`.
+If `version` == "nightly", then installs the bleeding-edge nightly version.
+
+# Keywrod Arguments
+- `install_location = "$(@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias")"` the path to put installed binaries
+- `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
+- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
+- `arch = "$(@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")"` the string representation of the cpu archetecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+- `set_default = (version=="")`` wheather to overwrite exisitng path entries of higher priority.
+"""
+function update_julia(version::AbstractString="";
+    set_default = version=="",
+    install_location = (@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias"),
+    bin = (@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin"),
+    os_str = (@os "winnt" "mac" "freebsd" "linux"),
+    arch = @static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")
+
+    v, url = v_url(version, os_str, arch)
+    prereport(v, url)
+
+    if @static Sys.iswindows() && v < v"1.5.0-rc2" && endswith(url, ".exe")
+        println("An manual installer was available but not an archive. Lanuching the manual installer now:")
+        download_delete(file->run(`$file`), url)
+        return v
     end
 
-    # Install
-    download_delete(url) do file
-        @static if Sys.isapple()
-            run(`hdiutil attach $file`)
-            if v === nothing
-                volumes = unique(first.(split.(filter(x->startswith(x, "Julia-"), readdir("/Volumes")))))
-                ver(x) = VersionNumber(join(split(x, '-')[1:2],'-'))
-                mx = maximum(ver.(volumes))
-                volumes = filter(x->ver(x) == mx, volumes)
-                @assert !isempty(volumes)
-                v_mount = VersionNumber(last(volumes)[7:end])
-            else
-                v_mount = v
-            end
-        elseif Sys.iswindows()
-            printstyled("=== Before line 80 ===\n", color=:purple)
-            println(isfile("$file"))
-            #run(`$file`)
-            download = "$(homedir())\\AppData\\Local\\Programs\\Julia 1.6.4"
-            run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$file', '$download'); }"`)
-            println(isdir("$download"))
-            printstyled("=== After line 80 ===\n", color=:purple)
-        else
-            mkpath("/opt/julias")
-            run(`tar zxf $file -C /opt/julias`)
-            download = "/opt/julias/julia-$v"
-        end
-        try
-            @static if Sys.isapple()
-                if v === nothing
-                    length(volumes) > 1 && error("Can't decide which volume to choose from in /Volumes: $volumes. Perhaps detach them all and try again?")
-                    mm = "$(v_mount.major).$(v_mount.minor)"
-                    cp("/Volumes/Julia-$v_mount/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-                else
-                    cp("/Volumes/Julia-$v/Julia-$mm.app", "/Applications/Julia-$mm.app", force=true)
-                end
-                download = "/Applications/Julia-$mm.app/Contents/Resources/julia"
-            end
-
-            executable = joinpath(download, "bin", @static Sys.iswindows() ? "julia.exe" : "julia")
-            v === nothing && (v = VersionNumber(strip(open(f->read(f, String), `$executable -v`))[15:end]))
-            link(executable, "julia-$mm", v)
-            @static if Sys.islinux() # Linux conventions call for installing patch releasess
-                link(executable, "julia-$v", v) # paralell to eachother, while
-            end # mac overwrites 1.6.1 with 1.6.4 which would break this.
-            if set_as_default
-                link(executable, "julia", v)
-            end
-        finally
-            @static if Sys.isapple()
-                run(`hdiutil detach /Volumes/Julia-$v_mount`)
-            end
-        end
+    executable = download_delete(url) do file
+        extract(install_location, file, v)
     end
 
-    if set_as_default
-        printstyled("Success! julia and julia-$mm now to point to $v\n", color=:green)
-    else
-        printstyled("Success! julia-$mm now to points to $v\n", color=:green)
+    @static Sys.iswindows() && ensure_bin(bin)
+
+    commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
+    set_default && push!(commands, "julia")
+    for command in commands
+        link(executable, bin, command, set_default, v)
     end
+
+    printstyled("Success! \`$(join(commands, "\` & \`"))\` now to point to $v\n", color=:green)
 
     v
 end
 
-function link(executable, command, version, bin=@static Sys.iswindows() ? "C:\\Windows\\System32" : "/usr/local/bin")
-    # Because force is not available via Base.symlink
-    run(`ln -sf $executable $(joinpath(bin, command))`)
-    try
-        test(command, version)
-    catch x
-        if x isa AssertionError
-            printstyled("Failed to alias $command to Julia version $version. "*
-            "Results of `which -a $command`: \"", color=Base.warn_color())
-            open(`which -a $command`) do io
-                printstyled(strip(read(io, String)), color=Base.info_color())
-            end
-            printstyled("\"\n", color=Base.warn_color())
+## Fetch ##
+function v_url(version_str, os_str, arch_str)
+    if version_str == "nightly"
+        arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
+        arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
+        extension = @os "zip" "dmg" "tar.gz"
 
-            target = strip(open(x -> read(x, String), `which $command`))
-            printstyled("Additionally linking to $target\n", color=Base.info_color())
-            run(`ln -sf $executable $target`)
+        nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_str$arch_append.$extension"
+    else
+        fetch()
+        v = latest(version_str)
 
-            test(command, version)
-        else
-            printstyled("Unexpected error, Giving up.\n", color=Base.error_color())
-            printstyled("Perhaps $bin is not on your PATH?\n", color=Base.debug_color()) # TODO conditional gaurd on this
-            rethrow()
-        end
+        options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
+        isempty(options) && error("No valid download for $vs matching $os and $arch")
+        sort!(options, by = x->x["kind"])
+
+        v, first(options)["url"]
     end
-    println("Linked $command to $version stored at $executable")
 end
 
-function test(command, version)
-    @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
-end
-
-last_fetched = 0
-versions = nothing
+const last_fetched = Ref(0.0)
+const versions = Ref{Dict{VersionNumber, Dict{String, Any}}}()
 function fetch(force=false)
-    if force || time() > last_fetched + 1*60*60
-        download_delete("https://julialang-s3.julialang.org/bin/versions.json") do file
-            open(file) do io
-                global versions = JSON.parse(read(io, String))
-                global last_fetched = time()
-                nothing
+    try
+        if force || time() > last_fetched[] + 60*60 # 1 hour
+            download_delete("https://julialang-s3.julialang.org/bin/versions.json") do file
+                open(file) do io
+                    versions[] = Dict(VersionNumber(k)=>v for (k, v) in JSON.parse(read(io, String)))
+                    last_fetched[] = time()
+                    nothing
+                end
             end
+        end
+    catch
+        if force || time() > last_fetched[] + 24*60*60
+            rethrow()
         end
     end
 end
 
 function latest(prefix="")
-    fetch()
-    kys = collect(filter(v->startswith(v, prefix), keys(versions)))
-    isempty(kys) && throw(ArgumentError("No available versions starting with \"$prefix\""))
-    sort!(kys, by=VersionNumber)
-    sort!(kys, by=x->isempty(VersionNumber(x).prerelease))
+    kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
+    isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
+    sort!(kys)
+    sort!(kys, by=x->isempty(x.prerelease))
     last(kys)
 end
 
+const nightly_version = Ref{VersionNumber}()
+function nightly(url="https://raw.githubusercontent.com/JuliaLang/julia/master/VERSION")
+    try
+        contents = download_delete(url) do file
+            open(file) do io
+                read(io, String)
+            end
+        end
+        nightly_version[] = VersionNumber(contents)
+    catch
+        nightly_version[]
+    end
+end
+
+function prereport(v, url)
+    if v == latest()
+        printstyled("installing the latest version of julia ($v) from $url\n", color = :green)
+    elseif "DEV" ∈ v.prerelease
+        printstyled("installing julia $v from $url\n"*
+        "This version is an expiremental development build nor reccomended for most users. "*
+        "The latest official release is $(latest_version[])\n", color = :red)
+    else
+        printstyled("installing julia $v from $url\n", color = :yellow)
+        printstyled("This version is $(v > latest() ? "un-released" : "out of date"). "*
+        "The latest official release is $(latest())\n", color = :yellow)
+    end
+end
+
+## Download ##
 function download_delete(f, url)
     # use download instead of Downloads.download for backwards compatability
     file = @suppress_err download(url)
@@ -222,20 +153,72 @@ function download_delete(f, url)
     end
 end
 
-const os = if Sys.isapple()
-    "mac"
-elseif Sys.islinux()
-    "linux"
-elseif Sys.iswindows()
-    "winnt"
-elseif Sys.isbsd()
-    "freebsd"
-else
-    error("Unknown OS")
+## Extract ##
+function extract(install_location, download_file, v)
+    @static if Sys.iswindows()
+        run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
+        joinpath(install_location, "Julia-$v", "bin", "julia.exe")
+    elseif Sys.isapple()
+        run(`hdiutil attach $download_file`)
+        volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
+        try
+            cp("/Volumes/$(last(volumes))/Julia-$(v.major).$(v.minor).app", "$install_location/Julia-$v.app", force=true)
+        finally
+            for volume in volumes
+                run(`hdiutil detach /Volumes/$volume`)
+            end
+        end
+        "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
+    else
+        mkpath("/opt/julias")
+        run(`tar zxf $file -C $install_location`)
+        "/opt/julias/julia-$v/bin/julia"
+    end
 end
 
-arch = Sys.WORD_SIZE == 64 ? "x86_64" : "i686"
-@warn "If your CPU archetecture is not $arch, you must manually change UpdateJulia.arch
-Recommended values: \"x86_64\", \"i686\", \"aarch64\", \"armv7l\", and \"powerpc64le\""
+## Ensure bin ##
+function ensure_bin(bin)
+    @assert Sys.iswindows()
+    isdir(bin) || mkdir(bin)
+    if !occursin(bin, ENV["PATH"])
+        ENV["PATH"] *= "$bin;"
+        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\$PATH;$bin\", \"User\"); }"`)
+    end
+end
+
+## Link ##
+function link(executable, bin, command, set_default, v)
+    symlink_replace(executable, bin, command)
+
+
+    if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
+        link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
+        printstyled("Replacing symlink @ $link\n", color=Base.info_color())
+        symlink_replace(executable, bin, command)
+    end
+end
+
+function symlink_replace(target, bin, command)
+    # Because force is not available via Base.symlink
+    link = joinpath(bin, command)
+    if command ∈ readdir(bin)
+        t = tempname()
+        mv(link, t)
+        try
+            symlink(target, link)
+            rm(t)
+        catch
+            mv(t, link)
+            rethrow()
+        end
+    else
+        symlink(target, link)
+    end
+end
+
+## Test ##
+function test(command, version)
+    @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
+end
 
 end
