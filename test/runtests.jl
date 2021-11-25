@@ -42,5 +42,5 @@ end
     @test_nowarn UpdateJulia.test("julia-1.7.0-rc1", "1.7.0-rc1")
     @test_nowarn UpdateJulia.test("julia-1.7.0-rc3", "1.7.0-rc3")
     @test_nowarn UpdateJulia.test("julia-1.7", "1.7.0-rc3")
-    @test_nowarn UpdateJulia.test("julia", v_latest)
+    @test_skip UpdateJulia.test("julia", v_latest)
 end
