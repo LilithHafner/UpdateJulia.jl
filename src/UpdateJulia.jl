@@ -80,7 +80,7 @@ function update_julia(version::AbstractString=""; set_as_default = version=="")
     if use_installer
         (@static Sys.iswindows() && v < v"1.5.0-rc2") ||  @warn "Unexpected use of a manual installer"
         println("An manual installer was available but not an archive. Lanuching the manual installer now:")
-        download_delete(run, url)
+        download_delete(file->run(`$file`), url)
         return v
     end
 
