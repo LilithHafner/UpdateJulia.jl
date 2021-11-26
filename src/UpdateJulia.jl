@@ -46,15 +46,15 @@ function update_julia(version::AbstractString="";
     prereport(v, url)
 
     if @static Sys.iswindows() && endswith(url, ".exe")
-        prefer_gui || printstyled("A GUI installer was available but not an archive.", color=Base.warn_color())
+        prefer_gui || printstyled("A GUI installer was available but not an archive.\n", color=Base.warn_color())
         download_delete(url) do file
             mv(file, file*".exe")
-            printstyled("Lanuching GUI installer now:", color=:green)
+            printstyled("Lanuching GUI installer now:\n", color=:green)
             run(`$file.exe`)
         end
         return v
     elseif prefer_gui
-        printstyled("An archive was available but not a GUI. Installing the archive now.", color=Base.warn_color())
+        printstyled("An archive was available but not a GUI. Installing the archive now.\n", color=Base.warn_color())
     end
 
 
