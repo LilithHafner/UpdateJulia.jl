@@ -9,7 +9,7 @@ macro os(windows, apple=windows, freebsd=apple, linux=freebsd, other=linux)
         windows
     elseif Sys.isapple()
         apple
-    elseif @static VERSION >= V"1.1" && Sys.isfreebsd()
+    elseif @static VERSION >= v"1.1" && Sys.isfreebsd()
         freebsd
     elseif Sys.islinux()
         linux
@@ -58,7 +58,7 @@ function update_julia(version::AbstractString="";
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
     for command in commands
-        link(executable, bin, command, set_default, v)
+        link(executable, bin, (@os command+".exe" command), set_default, v)
     end
 
     printstyled("Success! \`$(join(commands, "\` & \`"))\` now to point to $v\n", color=:green)
