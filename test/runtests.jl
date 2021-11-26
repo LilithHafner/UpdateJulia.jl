@@ -29,10 +29,10 @@ using Test
 end
 
 @testset "Preserve old versions" begin
-    @test UpdateJulia.test("julia", UpdateJulia.latest())
     @static if Sys.iswindows()
-        @test_skip "interactive windows installer"
+        @test_skip "interactive windows installer & path management"
     else
+        @test UpdateJulia.test("julia", UpdateJulia.latest())
         @test UpdateJulia.test("julia-1.4", "1.4.2")
         @test UpdateJulia.test("julia-1.2", "1.2.0")
         @test UpdateJulia.test("julia-1.0.4", "1.0.4")
@@ -45,6 +45,6 @@ end
         @test_skip "path management"
     else
         @test UpdateJulia.test("julia-1.7", "1.7.0-rc3")
+        @test UpdateJulia.test("julia", v_latest)
     end
-    @test UpdateJulia.test("julia", v_latest)
 end
