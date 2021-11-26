@@ -168,9 +168,6 @@ end
 ## Extract ##
 function extract(install_location, download_file, v)
     @static if Sys.iswindows()
-        try
-            rm(install_location, force=true, recursive=true)
-        catch; end
         run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
         joinpath(install_location, "Julia-$v", "bin", "julia.exe")
     elseif Sys.isapple()
