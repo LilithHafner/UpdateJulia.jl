@@ -6,8 +6,8 @@ using Test
     printstyled("WARNING: this will both install out of date julia versions and change what the command `julia` points to.\n", color=Base.warn_color())
     printstyled("If all goes well, it will finish with the latest stable version of julia installed.\n", color=Base.warn_color())
 
-    global v_latest = update_julia()
-    @test v_latest == UpdateJulia.latest(prefer_gui = !Sys.iswindows()) # not supported. test fallback.
+    global v_latest = update_julia(prefer_gui = !Sys.iswindows())  # not supported. test fallback.
+    @test v_latest == UpdateJulia.latest()
     @test v_latest >= v"1.6.4" && v_latest.prerelease == ()
 
     @static if Sys.iswindows()
