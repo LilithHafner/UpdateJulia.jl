@@ -97,8 +97,7 @@ function v_url(version_str, os_str, arch_str, prefer_gui)
         arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
         arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
         os_append = os_str == "winnt" ? "win" : os_str
-        windows_extension = prefer_gui ? "exe" : "zip"
-        extension = @os windows_extension "dmg" "tar.gz"
+        extension = @static Sys.iswindows() ?  (prefer_gui ? "exe" : "zip") : (@static Sys.isapple() ?  "dmg" : "tar.gz")
 
         nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
     else
