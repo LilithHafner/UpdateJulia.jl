@@ -39,7 +39,7 @@ function update_julia(version::AbstractString="";
     install_location = (@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias"),
     bin = (@os nothing "/usr/local/bin"),
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
-    arch = @static Sys.WORD_SIZE == 64 ? "x86_64" : "i686",
+    arch = (@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686"),
     prefer_gui = false)
 
     v, url = v_url(version, os_str, arch, prefer_gui)
