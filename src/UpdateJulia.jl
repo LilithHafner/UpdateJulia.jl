@@ -235,6 +235,7 @@ function report(commands, version)
 end
 
 function test(command, version)
+    println(ENV["PATH"])
     open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
