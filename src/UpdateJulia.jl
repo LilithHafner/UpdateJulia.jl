@@ -31,7 +31,7 @@ If `version` == "nightly", then installs the bleeding-edge nightly version.
 - `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
 - `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
 - `arch = "$(@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")"` the string representation of the cpu archetecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
-- `set_default = $(@os "false" "(version == \"\")")`` wheather to overwrite exisitng path entries of higher priority (not supported on windows).
+- `set_default = $(@os "false" "(version == \"\")")` wheather to overwrite exisitng path entries of higher priority (not supported on windows).
 """
 function update_julia(version::AbstractString="";
     set_default = (@static Sys.iswindows() ? false : version==""),
