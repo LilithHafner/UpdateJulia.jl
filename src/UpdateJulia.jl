@@ -173,20 +173,20 @@ function extract(install_location, download_file, v)
         run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
         after = readdir(install_location)
         new = filter(x->startswith(x, "julia-"), setdiff(after, before))
-        "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v", force=true))
+        "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v"), force=true)
 
         joinpath(install_location, "julia-$v", "bin", "julia.exe")
     elseif Sys.isapple()
         run(`hdiutil attach $download_file`)
-        volumes = filter(x->startswith(x, "julia-$v"), readdir("/Volumes"))
+        volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
         try
-            cp("/Volumes/$(last(volumes))/julia-$(v.major).$(v.minor).app", "$install_location/julia-$v.app", force=true)
+            cp("/Volumes/$(last(volumes))/Julia-$(v.major).$(v.minor).app", "$install_location/Julia-$v.app", force=true)
         finally
             for volume in volumes
                 run(`hdiutil detach /Volumes/$volume`)
             end
         end
-        "$install_location/julia-$v.app/Contents/Resources/julia/bin/julia"
+        "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
     else
         mkpath("/opt/julias")
         run(`tar zxf $download_file -C $install_location`)
