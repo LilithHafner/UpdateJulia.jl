@@ -216,8 +216,8 @@ end
 function symlink_replace(target, link)
     # Because force is not available via Base.symlink
     @static if Sys.iswindows()
-        isfile(link) && run(`rm $link`) # Windows permission **** precudes Base.rm
-        run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
+        #Technically this isn't a replacement at all...
+        isfile(link) || run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
     else
         run(`ln -sf $target $link`)
     end
