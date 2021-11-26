@@ -237,10 +237,10 @@ end
 function test(command, version)
     println(ENV["PATH"])
     println(occursin("/usr/local/bin", ENV["PATH"]))
-    println("julia-1.8.0-DEV" ∈ listdir("/usr/local/bin"))
+    println("julia-1.8.0-DEV" ∈ readdir("/usr/local/bin"))
 
     println(occursin(";C:\\Users\\runneradmin\\AppData\\Local\\Programs\\julia-1.6.4\\bin", ENV["PATH"]))
-    println("julia-1.8.0-DEV" ∈ listdir("C:\\Users\\runneradmin\\AppData\\Local\\Programs\\julia-1.6.4\\bin"))
+    println("julia-1.8.0-DEV" ∈ readdir("C:\\Users\\runneradmin\\AppData\\Local\\Programs\\julia-1.6.4\\bin"))
     open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
