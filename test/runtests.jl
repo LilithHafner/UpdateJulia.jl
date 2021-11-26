@@ -13,7 +13,7 @@ using Test
     @static if Sys.iswindows()
         @test_skip "interactive windows installer"
     else
-        @test update_julia("1.4", set_default=true) == v"1.4.2"
+        @test update_julia("1.4", set_default=true) == v"1.4.2" # TODO check that this reports succeeds on all three counts
         @test update_julia("1.2", set_default=true) == v"1.2.0"
         @test update_julia("1.0.4") == v"1.0.4"
         @test update_julia("1.0.0") == v"1.0.0"
@@ -29,18 +29,22 @@ using Test
 end
 
 @testset "Preserve old versions" begin
-    @test_nowarn UpdateJulia.test("julia", UpdateJulia.latest())
+    @test UpdateJulia.test("julia", UpdateJulia.latest())
     @static if Sys.iswindows()
         @test_skip "interactive windows installer"
     else
-        @test_nowarn UpdateJulia.test("julia-1.4", "1.4.2")
-        @test_nowarn UpdateJulia.test("julia-1.2", "1.2.0")
-        @test_nowarn UpdateJulia.test("julia-1.0.4", "1.0.4")
-        @test_nowarn UpdateJulia.test("julia-1.0.0", "1.0.0")
-        @test_nowarn UpdateJulia.test("julia-1.0", v10_latest)
+        @test UpdateJulia.test("julia-1.4", "1.4.2")
+        @test UpdateJulia.test("julia-1.2", "1.2.0")
+        @test UpdateJulia.test("julia-1.0.4", "1.0.4")
+        @test UpdateJulia.test("julia-1.0.0", "1.0.0")
+        @test UpdateJulia.test("julia-1.0", v10_latest)
     end
-    @test_nowarn UpdateJulia.test("julia-1.7.0-rc1", "1.7.0-rc1")
-    @test_nowarn UpdateJulia.test("julia-1.7.0-rc3", "1.7.0-rc3")
-    @test_nowarn UpdateJulia.test("julia-1.7", "1.7.0-rc3")
-    @test_skip UpdateJulia.test("julia", v_latest)
+    @test UpdateJulia.test("julia-1.7.0-rc1", "1.7.0-rc1")
+    @test UpdateJulia.test("julia-1.7.0-rc3", "1.7.0-rc3")
+    @static if Sys.iswindows()
+        @test_skip "path management"
+    else
+        @test UpdateJulia.test("julia-1.7", "1.7.0-rc3")
+    end
+    @test UpdateJulia.test("julia", v_latest)
 end

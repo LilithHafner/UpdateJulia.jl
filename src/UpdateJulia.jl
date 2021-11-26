@@ -31,12 +31,12 @@ If `version` == "nightly", then installs the bleeding-edge nightly version.
 - `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
 - `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
 - `arch = "$(@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")"` the string representation of the cpu archetecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
-- `set_default = (version=="")`` wheather to overwrite exisitng path entries of higher priority.
+- `set_default = $(@os "false" "(version == \"\")")`` wheather to overwrite exisitng path entries of higher priority (not supported on windows).
 """
 function update_julia(version::AbstractString="";
-    set_default = version=="",
+    set_default = (@static Sys.iswindows() ? false : version==""),
     install_location = (@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias"),
-    bin = (@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin"),
+    bin = (@os nothing "/usr/local/bin"),
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
     arch = @static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")
 
@@ -53,15 +53,27 @@ function update_julia(version::AbstractString="";
         extract(install_location, file, v)
     end
 
-    @static Sys.iswindows() && ensure_bin(bin)
+    @static if Sys.iswindows()
+        # Windows doesn't use the bin system, instead adding each individual julia
+        # instillation to path. This approach does a worse job of handling multiple versions
+        # overwriting eachother, but Windows doesn't support symlinks for ordinary users,
+        # and hardlinks to julia from different executables don't run, so while possible, it
+        # would be much more work to use the more effective unix approach. For now, we
+        # create version specific executables, add everything to path, and let the user deal
+        # with ordering path entries if they want to.
+        bin = join(split(executable, "\\")[1:end-1], "\\")
+        add_to_path(bin)
+    end
 
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
+
     for command in commands
         link(executable, bin, command * (@os ".exe" ""), set_default, v)
     end
 
-    printstyled("Success! \`$(join(commands, "\` & \`"))\` now to point to $v\n", color=:green)
+    !set_default && push!(commands, "julia")
+    report(commands, v)
 
     v
 end
@@ -176,13 +188,13 @@ function extract(install_location, download_file, v)
     end
 end
 
-## Ensure bin ##
-function ensure_bin(bin)
+function add_to_path(bin)
     @assert Sys.iswindows()
     isdir(bin) || mkdir(bin)
     if !occursin(bin, ENV["PATH"])
         ENV["PATH"] *= "$bin;"
         run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\$PATH;$bin\", \"User\"); }"`)
+        println("Adding $bin to path. Shell/PowerShell restart may be required.")
     end
 end
 
@@ -196,6 +208,8 @@ function link(executable, bin, command, set_default, v)
         printstyled("Replacing symlink @ $link\n", color=Base.info_color())
         symlink_replace(executable, link)
     end
+
+    open(f->read(f, String), `$command -v`) == "julia version $v\n"
 end
 
 function symlink_replace(target, link)
@@ -208,8 +222,14 @@ function symlink_replace(target, link)
 end
 
 ## Test ##
+function report(commands, version)
+    successes = filter(c->test(c, version), commands)
+    @assert !isempty(successes)
+    printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $version\n", color=:green)
+end
+
 function test(command, version)
-    @assert open(f->read(f, String), `$command -v`) == "julia version $version\n"
+    open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
 end
