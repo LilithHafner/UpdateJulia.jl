@@ -208,8 +208,6 @@ function link(executable, bin, command, set_default, v)
         printstyled("Replacing symlink @ $link\n", color=Base.info_color())
         symlink_replace(executable, link)
     end
-
-    open(f->read(f, String), `$command -v`) == "julia version $v\n"
 end
 
 function symlink_replace(target, link)
