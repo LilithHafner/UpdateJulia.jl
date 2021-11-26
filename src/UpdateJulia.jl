@@ -223,7 +223,7 @@ function symlink_replace(target, link)
         isfile(link) || run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
     else
         run(`ln -sf $target $link`)
-        println("ln -sf $target $link")
+        #println("ln -sf $target $link")
     end
 end
 
@@ -235,16 +235,17 @@ function report(commands, version)
 end
 
 function test(command, version)
-    println(ENV["PATH"])
-    if Sys.isunix()
+    try
+        open(f->read(f, String), `$command -v`) == "julia version $version\n"
+    catch
+        println("Expected error 1")
+        println(command)
+        println(version)
+        println(ENV["PATH"])
         println(occursin("/usr/local/bin", ENV["PATH"]))
         println("julia-1.8.0-DEV" ∈ readdir("/usr/local/bin"))
+        rethrow()
     end
-    if Sys.iswindows()
-        println(occursin(";C:\\Users\\runneradmin\\AppData\\Local\\Programs\\julia-1.6.4\\bin", ENV["PATH"]))
-        println("julia-1.8.0-DEV" ∈ readdir("C:\\Users\\runneradmin\\AppData\\Local\\Programs\\julia-1.6.4\\bin"))
-    end
-    open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
 end
