@@ -49,8 +49,12 @@ function update_julia(version::AbstractString="";
         prefer_gui || printstyled("A GUI installer was available but not an archive.\n", color=Base.warn_color())
         download_delete(url) do file
             mv(file, file*".exe")
-            printstyled("Lanuching GUI installer now:\n", color=:green)
-            run(`$file.exe`)
+            try
+                printstyled("Lanuching GUI installer now:\n", color=:green)
+                run(`$file.exe`)
+            finally
+                mv(file*".exe", file)
+            end
         end
         return v
     elseif prefer_gui
