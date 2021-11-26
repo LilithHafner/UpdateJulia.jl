@@ -58,7 +58,7 @@ function update_julia(version::AbstractString="";
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
     for command in commands
-        link(executable, bin, (@os command+".exe" command), set_default, v)
+        link(executable, bin, command * (@os ".exe" ""), set_default, v)
     end
 
     printstyled("Success! \`$(join(commands, "\` & \`"))\` now to point to $v\n", color=:green)
