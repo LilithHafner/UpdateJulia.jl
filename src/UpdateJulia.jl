@@ -168,7 +168,7 @@ end
 ## Extract ##
 function extract(install_location, download_file, v)
     @static if Sys.iswindows()
-        run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
+        run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location', true); }"`)
         joinpath(install_location, "Julia-$v", "bin", "julia.exe")
     elseif Sys.isapple()
         run(`hdiutil attach $download_file`)
