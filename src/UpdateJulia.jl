@@ -32,22 +32,31 @@ If `version` == "nightly", then installs the bleeding-edge nightly version.
 - `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
 - `arch = "$(@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")"` the string representation of the cpu archetecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
 - `set_default = $(@os "false" "(version == \"\")")` wheather to overwrite exisitng path entries of higher priority (not supported on windows).
+- `prefer_gui = false` wheather to prefer using the "installer" version rather than downloading the "archive" version and letting UpdateJulia automatically install it (only supported on windows).
 """
 function update_julia(version::AbstractString="";
     set_default = (@static Sys.iswindows() ? false : version==""),
     install_location = (@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias"),
     bin = (@os nothing "/usr/local/bin"),
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
-    arch = @static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")
+    arch = @static Sys.WORD_SIZE == 64 ? "x86_64" : "i686",
+    prefer_gui = false)
 
-    v, url = v_url(version, os_str, arch)
+    v, url = v_url(version, os_str, arch, prefer_gui)
     prereport(v, url)
 
-    if @static Sys.iswindows() && v < v"1.5.0-rc2" && endswith(url, ".exe")
-        println("An manual installer was available but not an archive. Lanuching the manual installer now:")
-        download_delete(file->run(`$file`), url)#TODO BROKEN
+    if @static Sys.iswindows() && endswith(url, ".exe")
+        prefer_gui || printstyled("A GUI installer was available but not an archive.", color=Base.warn_color())
+        download_delete(url) do file
+            mv(file, file*".exe")
+            printstyled("Lanuching GUI installer now:", color=:green)
+            run(`$file.exe`)
+        end
         return v
+    elseif prefer_gui
+        printstyled("An archive was available but not a GUI. Installing the archive now.", color=Base.warn_color())
     end
+
 
     executable = download_delete(url) do file
         extract(install_location, file, v)
@@ -79,12 +88,13 @@ function update_julia(version::AbstractString="";
 end
 
 ## Fetch ##
-function v_url(version_str, os_str, arch_str)
+function v_url(version_str, os_str, arch_str, prefer_gui)
     if version_str == "nightly"
         arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
         arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
         os_append = os_str == "winnt" ? "win" : os_str
-        extension = @os "zip" "dmg" "tar.gz"
+        windows_extension = prefer_gui ? "exe" : "zip"
+        extension = @os windows_extension "dmg" "tar.gz"
 
         nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
     else
@@ -92,7 +102,7 @@ function v_url(version_str, os_str, arch_str)
 
         options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
         isempty(options) && error("No valid download for $vs matching $os and $arch")
-        sort!(options, by = x->x["kind"])
+        sort!(options, by = x->x["kind"], rev=prefer_gui)
 
         v, first(options)["url"]
     end

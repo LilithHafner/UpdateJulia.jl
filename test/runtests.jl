@@ -10,16 +10,16 @@ using Test
     @test v_latest == UpdateJulia.latest()
     @test v_latest >= v"1.6.4" && v_latest.prerelease == ()
 
-    @static if Sys.iswindows()
+    #=@static if Sys.iswindows()
         @test_skip "interactive windows installer"
-    else
+    else=#
         @test update_julia("1.4", set_default=true) == v"1.4.2" # TODO check that this reports succeeds on all three counts
         @test update_julia("1.2", set_default=true) == v"1.2.0"
         @test update_julia("1.0.4") == v"1.0.4"
         @test update_julia("1.0.0") == v"1.0.0"
         global v10_latest = update_julia("1.0")
         @test v10_latest >= v"1.0.5" && v10_latest < v"1.1.0"
-    end
+    #end
     @test update_julia("1.7.0-rc1") == v"1.7.0-rc1"
     @test update_julia("1.7.0-rc3") == v"1.7.0-rc3"
     @test update_julia() == v_latest
