@@ -193,7 +193,7 @@ function add_to_path(bin)
     isdir(bin) || mkdir(bin)
     if !occursin(bin, ENV["PATH"])
         ENV["PATH"] *= "$bin;"
-        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\$PATH$bin;\", \"User\"); }"`)
+        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH}$bin;\", \"User\"); }"`)
         println("Adding $bin to path. Shell/PowerShell restart may be required.")
     end
 end
