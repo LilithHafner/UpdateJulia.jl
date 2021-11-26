@@ -45,7 +45,7 @@ function update_julia(version::AbstractString="";
 
     if @static Sys.iswindows() && v < v"1.5.0-rc2" && endswith(url, ".exe")
         println("An manual installer was available but not an archive. Lanuching the manual installer now:")
-        download_delete(file->run(`$file`), url)
+        download_delete(file->run(`$file`), url)#TODO BROKEN
         return v
     end
 
@@ -193,7 +193,7 @@ function add_to_path(bin)
     isdir(bin) || mkdir(bin)
     if !occursin(bin, ENV["PATH"])
         ENV["PATH"] *= "$bin;"
-        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\$PATH;$bin\", \"User\"); }"`)
+        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\$PATH$bin;\", \"User\"); }"`)
         println("Adding $bin to path. Shell/PowerShell restart may be required.")
     end
 end
