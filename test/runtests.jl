@@ -23,9 +23,12 @@ using Test
     @test update_julia("1.7.0-rc1") == v"1.7.0-rc1"
     @test update_julia("1.7.0-rc3") == v"1.7.0-rc3"
     @test update_julia() == v_latest
-    global v_nightly = update_julia("nightly")
-    @test v_nightly >= v"1.8-DEV" && v_nightly > v_latest && v_nightly.prerelease == ("DEV",)
-
+    @static if Sys.iswindows() || Sys.isapple()
+        global v_nightly = update_julia("nightly")
+        @test v_nightly >= v"1.8-DEV" && v_nightly > v_latest && v_nightly.prerelease == ("DEV",)
+    else
+        @test_broken "ubuntu nightly"
+    end
 end
 
 @testset "Preserve old versions" begin

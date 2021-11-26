@@ -146,7 +146,7 @@ function prereport(v, url)
         printstyled("installing the latest version of julia ($v) from $url\n", color = :green)
     elseif "DEV" ∈ v.prerelease
         printstyled("installing julia $v from $url\n"*
-        "This version is an expiremental development build nor reccomended for most users. "*
+        "This version is an expiremental development build not reccomended for most users. "*
         "The latest official release is $(latest())\n", color = :red)
     else
         printstyled("installing julia $v from $url\n", color = :yellow)
