@@ -223,6 +223,7 @@ function symlink_replace(target, link)
         isfile(link) || run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
     else
         run(`ln -sf $target $link`)
+        println("ln -sf $target $link")
     end
 end
 
