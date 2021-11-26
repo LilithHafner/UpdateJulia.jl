@@ -83,9 +83,10 @@ function v_url(version_str, os_str, arch_str)
     if version_str == "nightly"
         arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
         arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
+        os_append = os_str == "winnt" ? "win" : os_str
         extension = @os "zip" "dmg" "tar.gz"
 
-        nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_str$arch_append.$extension"
+        nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
     else
         v = latest(version_str)
 
