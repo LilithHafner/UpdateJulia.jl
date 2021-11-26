@@ -11,7 +11,7 @@ Note: this is a julia package that requires julia 1.0 or higher to run. If you w
 
 ## Usage
 ```jl
-]add UpdateJulia
+]add https://github.com/LilithHafner/UpdateJulia.jl.git
 using UpdateJulia
 update_julia()
 ```
