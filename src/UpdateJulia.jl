@@ -192,7 +192,7 @@ function add_to_path(bin)
     @assert Sys.iswindows()
     isdir(bin) || mkdir(bin)
     occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= "$bin;")
-    if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH'))"`))
+    if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
         run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH}$bin;\", \"User\"); }"`)
         println("Adding $bin to path. Shell/PowerShell restart may be required.")
     end
