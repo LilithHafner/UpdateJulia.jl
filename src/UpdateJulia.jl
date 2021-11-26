@@ -174,6 +174,7 @@ function extract(install_location, download_file, v)
         after = readdir(install_location)
         new = filter(x->startswith(x, "julia-"), setdiff(after, before))
         "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v"))
+        println(before, after, new)
 
         joinpath(install_location, "julia-$v", "bin", "julia.exe")
     elseif Sys.isapple()
