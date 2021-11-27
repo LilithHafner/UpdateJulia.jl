@@ -7,7 +7,7 @@
 
 ## Simple cross platform julia installer
 
-Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and doldon't have at least julia 1.0 installed already, please visit https://julialang.org/downloads/
+Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads/.
 
 ## Usage
 ```jl
@@ -60,9 +60,9 @@ search: update_julia
          rather than downloading the "archive" version and letting UpdateJulia 
          automatically install it (only supported on windows).
 ```
-The system dependant portions of info statements are replaced with `...`.
+The system dependent portions of info statements are replaced with `...`.
 
 ## Known issues (contributions welcome!)
 - Cannot install nightly builds on ubuntu
 - Does not automatically migrate `Project.toml` and run `Pkg.update()`.
-- Management of multiple versions on Windows is annoying. As with other opperating systems, UpdateJulia will install new versions which can be reached via the commands `julia`, `julia-major.minor` (e.g. `julia-1.6`) or `julia-major.minor.patch` (e.g. `julia-1.6.4`), but because we append to the path variable, older instillations will take precidence where there are name conflicts. You can manually edit your path varialbles by pressing windows+r enterting `rundll32 sysdm.cpl,EditEnvironmentVariables`, and pressing ok.
+- Management of multiple versions on Windows is annoying. As with other opperating systems, UpdateJulia will install new versions which can be reached via the commands `julia`, `julia-major.minor` (e.g. `julia-1.6`) or `julia-major.minor.patch` (e.g. `julia-1.6.4`), but because we append to the path variable, older installations will take precedence where there are name conflicts. You can manually edit your path variables by pressing windows+r enterting `rundll32 sysdm.cpl,EditEnvironmentVariables`, and pressing ok.
