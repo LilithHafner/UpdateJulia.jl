@@ -4,7 +4,8 @@ using InteractiveUtils: versioninfo
 
 @testset "UpdateJulia.jl" begin
 
-    println("isdir(\"opt/julias\"): ", isdir("opt/julias"))
+    println("isdir ", isdir("/opt/julias"))
+    println("stat ", stat("/opt"))
     versioninfo(verbose=true)
     run(`whoami`)
     #=
