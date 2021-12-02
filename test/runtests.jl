@@ -4,9 +4,10 @@ using InteractiveUtils: versioninfo
 
 @testset "UpdateJulia.jl" begin
 
+    println("isdir(\"opt/julias\"): ", isdir("opt/julias"))
     versioninfo(verbose=true)
     run(`whoami`)
-
+    #=
     printstyled("WARNING: this will both install out of date julia versions and change what the command `julia` points to.\n", color=Base.warn_color())
     printstyled("If all goes well, it will finish with the latest stable version of julia installed.\n", color=Base.warn_color())
 
@@ -54,4 +55,5 @@ end
         #@test UpdateJulia.test("julia-1.7", "1.7.0-rc3") Depends on what the latest 1.7 release is
         @test UpdateJulia.test("julia", v_latest)
     end
+    =#
 end
