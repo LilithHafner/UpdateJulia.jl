@@ -62,6 +62,16 @@ search: update_julia
 ```
 The system dependent portions of info statements are replaced with `...`.
 
+## Install locations
+
+OS|System install|System bin|User install|User bin
+-|-|-|-|-
+unix   | `/opt/julias`   | `/usr/local/bin`| `~/.local/julias`         | `~/.local/bin`
+mac    | `/Applications` | `/usr/local/bin`| `~/Applications`          | `~/.local/bin`
+windows| `\Program Files`| automatically add install location to path | `~\AppData\Local\Programs`| automatically add install location to path
+
+(For user instillation, make sure your bin location is on your path)
+
 ## Known issues (contributions welcome!)
 - Cannot install nightly builds on ubuntu
 - Does not automatically migrate `Project.toml` and run `Pkg.update()`.
