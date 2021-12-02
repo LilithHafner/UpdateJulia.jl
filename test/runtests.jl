@@ -47,7 +47,7 @@ end
     @static if Sys.iswindows()
         @test_skip "path management"
     else
-        @test UpdateJulia.test("julia-1.7", "1.7.0-rc3")
+        #@test UpdateJulia.test("julia-1.7", "1.7.0-rc3") Depends on what the latest 1.7 release is
         @test UpdateJulia.test("julia", v_latest)
     end
 end
