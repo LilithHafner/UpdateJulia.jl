@@ -1,5 +1,6 @@
 using UpdateJulia
 using Test
+using InteractiveUtils: versioninfo
 
 @testset "UpdateJulia.jl" begin
 
