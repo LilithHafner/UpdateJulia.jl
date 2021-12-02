@@ -3,6 +3,9 @@ using Test
 
 @testset "UpdateJulia.jl" begin
 
+    println(homedir())
+    run(`whoami`)
+
     printstyled("WARNING: this will both install out of date julia versions and change what the command `julia` points to.\n", color=Base.warn_color())
     printstyled("If all goes well, it will finish with the latest stable version of julia installed.\n", color=Base.warn_color())
 
