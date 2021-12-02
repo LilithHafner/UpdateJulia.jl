@@ -201,9 +201,9 @@ function extract(install_location, download_file, v)
         end
         "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
     else
-        mkpath("/opt/julias")
+        mkpath(install_location)
         run(`tar zxf $download_file -C $install_location`)
-        "/opt/julias/julia-$v/bin/julia"
+        "$install_location/julia-$v/bin/julia"
     end
 end
 
