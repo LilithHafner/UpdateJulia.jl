@@ -104,7 +104,7 @@ function v_url(version_str, os_str, arch_str, prefer_gui)
         v = latest(version_str)
 
         options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
-        isempty(options) && error("No valid download for $vs matching $os and $arch")
+        isempty(options) && error("No valid download for \"$version_str\" matching $os_str and $arch_str")
         sort!(options, by = x->x["kind"], rev=prefer_gui)
 
         v, first(options)["url"]
