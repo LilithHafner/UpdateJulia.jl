@@ -66,7 +66,7 @@ $(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installe
 Destination
 - `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
-- `bin = $(Sys.iswindows() ? nothing : "systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"")` directory to store links to the binaries
+$(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
 
 Source
 - `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
@@ -92,6 +92,7 @@ function update_julia(version::AbstractString="";
 
     @static VERSION >= v"1.1" && verbose && display(Base.@locals)
     @static Sys.iswindows() && set_default && (println("set_default=true not supported for windows"); set_default=false)
+    @static Sys.iswindows() && bin !== nothing && (println("bin not supported for windows"); bin=nothing)
 
     prereport(v) #TODO should this report more info?
 
