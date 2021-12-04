@@ -19,58 +19,83 @@ update_julia()
 ## Examples
 ```julia
 julia> update_julia()
-installing the latest version of julia (1.6.4) from 
-https://julialang-s3.julialang.org/bin/.../1.6/julia-1.6.4-...
+installing the latest version of julia: 1.7.0
 ...
-Success! `julia-1.6.4` & `julia-1.6` & `julia` now to point to 1.6.4
+"disk2" ejected.
+Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0
+v"1.7.0"
 
-julia> update_julia("1.4")
-installing julia 1.4.2 from https://julialang-s3.julialang.org/bin/.../1.4/julia-1.4.2-...
-This version is out of date. The latest official release is 1.6.4
-...
-Success! `julia-1.4.2` & `julia-1.4` now to point to 1.4.2
+julia> update_julia("1.4", dry_run=true)
+Dict{Symbol, Any} with 14 entries:
+  :os_str           => "..."
+  :dry_run          => true
+  :version          => "1.4"
+  :set_default      => false
+  :force_fetch      => false
+  :prefer_gui       => false
+  :url              => "https://julialang-s3.julialang.org/bin/.../.../1.4/julia-1.4.2-..."
+  :verbose          => true
+  :v                => v"1.4.2"
+  :bin              => "..."
+  :systemwide       => ...
+  :_v_url           => (v"1.4.2", "https://julialang-s3.julialang.org/bin/.../.../1.4/julia-1.4.2-...")
+  :install_location => "..."
+  :arch             => "..."
+installing julia 1.4.2
+This version is out of date. The latest official release is 1.7.0
+aborting before download & install
+v"1.4.2"
 
 help?> update_julia
 search: update_julia
 
   update_julia(version::AbstractString="")
 
-  Install the latest version of julia from https://julialang.org
+  Install the latest version of Julia from https://julialang.org
 
-  If version is provided, installs the latest version that starts with version. 
-  If version == "nightly", then installs the bleeding-edge nightly version.
+  If version is provided, installs the latest version that starts with version. If version == "nightly", then installs the bleeding-edge
+  nightly version.
 
-  Keywrod Arguments
+  Keyword Arguments
   ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
-    •    install_location = "..." the path to put installed binaries
+  Behavior flags
 
-    •    bin = "/usr/local/bin" the place to store links to the binaries
+    •  set_default = ... make 'julia' point to installed version.
 
-    •    os_str = "..." the string representation of the opperating system: 
-         "linux", "mac", "winnt", or "freebsd".
+    •  dry_run = false skip the actual download and instillation
 
-    •    arch = "..." the string representation of the cpu archetecture: 
-         "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+    •  verbose = dry_run print the final value of all arguments
 
-    •    set_default = ... wheather to overwrite exisitng path 
-         entries of higher priority (not supported on windows).
+  Destination
 
-    •    prefer_gui = false wheather to prefer using the "installer" version 
-         rather than downloading the "archive" version and letting UpdateJulia 
-         automatically install it (only supported on windows).
+    •  systemwide = true install for all users, false only installs for current user.
+
+    •  install_location = systemwide ? "..." : "..." directory to put installed binaries
+
+    •  bin = systemwide ? "/usr/local/bin" : "/Users/x/.local/bin" directory to store links to the binaries
+
+  Source
+
+    •  os_str = "..." string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
+
+    •  arch = "..." string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+
+    •  v = ... the VersionNumber to install
+
+    •  url = ... URL to download that version from, if you explicitly set url, also explicitly set v lest they differ
+
+julia>
 ```
 The system dependent portions of info statements are replaced with `...`.
 
 ## Install locations
 
-OS|System install|System bin|User install|User bin
--|-|-|-|-
-unix   | `/opt/julias`   | `/usr/local/bin`| `~/.local/julias`         | `~/.local/bin`
-mac    | `/Applications` | `/usr/local/bin`| `~/Applications`          | `~/.local/bin`
-windows| `\Program Files`| automatically add install location to path | `~\AppData\Local\Programs`| automatically add install location to path
-
-(For user instillation, make sure your bin location is on your path)
+OS     | System install  | System bin                                | User install              | User bin
+-      | -               | -                                         | -                         | -
+unix   | `/opt`          | `/usr/local/bin`                          | `~/.local   `             | `~/.local/bin`
+mac    | `/Applications` | `/usr/local/bin`                          | `~/Applications`          | `~/.local/bin`
+windows| `\Program Files`| automatically add install location to path| `~\AppData\Local\Programs`| automatically add install location to path
 
 ## Known issues (contributions welcome!)
 - Cannot install nightly builds on ubuntu
