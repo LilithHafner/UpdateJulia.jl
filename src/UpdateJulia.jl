@@ -33,6 +33,8 @@ function default_install_location(systemwide, v)
                                 ( systemwide && startswith(current, "/opt/julia")) ||
                                 (!systemwide && startswith(current, homedir()   )) )))
         current # current is already a conventional location
+    elseif v === nothing
+        "$default\" or \"$current"
     else
         println("julia-$VERSION is currently installed in $current. Install julia-$v in $default instead? Y/n")
         response = readline(stdin)
@@ -49,19 +51,29 @@ end
 """
     update_julia(version::AbstractString="")
 
-Install the latest version of julia from https://julialang.org
+Install the latest version of Julia from https://julialang.org
 
 If `version` is provided, installs the latest version that starts with `version`.
-If `version` == "nightly", then installs the bleeding-edge nightly version.
+If `version == "nightly"`, then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
-This list is suggestive and hopefully mostly accurate but not authoritative.
-- `install_location = "$(@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias")"` the path to put installed binaries
-- `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
-- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
-- `arch = "$(@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")"` the string representation of the cpu archetecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
-- `set_default = $(@os "false" "(version == \"\")")` wheather to overwrite exisitng path entries of higher priority (not supported on windows).
-- `prefer_gui = false` wheather to prefer using the "installer" version rather than downloading the "archive" version and letting UpdateJulia automatically install it (only supported on windows).
+Behavior flags
+$(Sys.iswindows() ? "" : "- `set_default = (v == latest())` make 'julia' point to installed version.")
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
+- `dry_run = false` skip the actual download and instillation
+- `verbose = dry_run` print the final value of all arguments
+
+Destination
+- `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
+- `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
+- `bin = $(Sys.iswindows() ? nothing : "systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"")` directory to store links to the binaries
+
+Source
+- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
+- `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+
+- `v = ...` the `VersionNumber` to install
+- `url = ...` URL to download that version from, if you explicitly set `url`, also explicitly set `v` lest they differ
 """
 function update_julia(version::AbstractString="";
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
