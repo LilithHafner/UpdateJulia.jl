@@ -273,6 +273,7 @@ function link(executable, bin, command, set_default, v)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
         link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
+        @static Sys.iswindows() && run(`which.exe julia-1.5`)
         printstyled("Replacing symlink @ $link\n", color=Base.info_color())
         symlink_replace(executable, link)
     end
