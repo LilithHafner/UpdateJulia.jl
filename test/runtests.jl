@@ -25,7 +25,7 @@ using Test
 
     @test update_julia("1.5.2", prefer_gui = !Sys.iswindows()) == v"1.5.2" # not supported. test fallback.
     @test update_julia("1.5.3", set_default=true, systemwide=true, verbose=true) == v"1.5.3" # TODO check that this reports succeeds on all three counts
-    @test update_julia("1.5.1", set_default=true, systemwide=false, verbose=true) == v"1.5.1"
+    @test update_julia("1.5.1", set_default=true, systemwide=false) == v"1.5.1"
     @elapsed @test update_julia("1.7.0-rc1", dry_run = true) == v"1.7.0-rc1"
     @test .1 > @elapsed @test update_julia("1.7.0-rc1", dry_run = true) == v"1.7.0-rc1"
     @test update_julia("1.7.0-rc1", dry_run = true, verbose = false) == v"1.7.0-rc1"

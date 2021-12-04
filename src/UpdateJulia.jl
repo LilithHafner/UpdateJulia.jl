@@ -75,6 +75,7 @@ function update_julia(version::AbstractString="";
     verbose = dry_run)
 
     @static VERSION >= v"1.1" && verbose && display(Base.@locals)
+    @static Sys.iswindows() && set_default && (println("set_default=true not supported for windows"); set_default=false)
 
     prereport(v) #TODO should this report more info?
 
@@ -273,7 +274,6 @@ function link(executable, bin, command, set_default, v)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
         link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
-        @static Sys.iswindows() && run(`which.exe julia-1.5`)
         printstyled("Replacing symlink @ $link\n", color=Base.info_color())
         symlink_replace(executable, link)
     end
