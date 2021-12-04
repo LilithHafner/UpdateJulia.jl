@@ -27,8 +27,10 @@ function default_install_location(systemwide, v)
     current = dirname(dirname(
         @static Sys.isapple() ? dirname(dirname(dirname(Base.Sys.BINDIR))) : Base.Sys.BINDIR))
 
-    if current == default || (@static Sys.isunix() && (@static !Sys.isapple() && startswith(current, "/opt/julia")))
-        current
+    if current == default || (@static Sys.isunix() && (@static !Sys.isapple() && (
+                                ( systemwide && startswith(current, "/opt/julia")) ||
+                                (!systemwide && startswith(current, homedir()   )) )))
+        current # current is already a conventional location
     else
         println("julia-$VERSION is currently installed in $current. Install julia-$v in $default instead? Y/n")
         response = readline(stdin)
