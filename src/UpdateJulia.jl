@@ -18,6 +18,30 @@ macro os(windows, apple=windows, freebsd=apple, linux=freebsd, other=linux)
     end
 end
 
+function default_install_location(systemwide, v)
+    default = if systemwide
+        @os "\\Program Files" "/Applications" "/opt"
+    else
+        (joinpath(homedir(), (@os "AppData\\Local\\Programs" "Applications" ".local")))
+    end
+    current = dirname(dirname(
+        @static Sys.isapple() ? dirname(dirname(dirname(Base.Sys.BINDIR))) : Base.Sys.BINDIR))
+
+    if current == default || (@static Sys.isunix() && (@static !Sys.isapple() && startswith(current, "/opt/julia")))
+        current
+    else
+        println("julia-$VERSION is currently installed in $current. Install julia-$v in $default instead? Y/n")
+        response = readline(stdin)
+        if isempty(response) || uppercase(first(response)) == 'Y'
+            default
+        elseif uppercase(first(response)) == 'N'
+            current
+        else
+            error("Unknown input: $response. Expected 'y' or 'n'.")
+        end
+    end
+end
+
 """
     update_julia(version::AbstractString="")
 
@@ -36,9 +60,6 @@ This list is suggestive and hopefully mostly accurate but not authoritative.
 - `prefer_gui = false` wheather to prefer using the "installer" version rather than downloading the "archive" version and letting UpdateJulia automatically install it (only supported on windows).
 """
 function update_julia(version::AbstractString="";
-    set_default = (@static Sys.iswindows() ? false : version==""),
-    install_location = (@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias"),
-    bin = (@os nothing "/usr/local/bin"),
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
     arch = string(Base.Sys.ARCH),
     prefer_gui = false,
@@ -46,6 +67,10 @@ function update_julia(version::AbstractString="";
     _v_url = v_url(version, os_str, arch, prefer_gui, force_fetch),
     v = first(_v_url),
     url = last(_v_url),
+    set_default = (@static Sys.iswindows() ? false : v==latest()),
+    systemwide = !startswith(Base.Sys.BINDIR, homedir()),
+    install_location = default_install_location(systemwide, v),
+    bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
     dry_run = false,
     verbose = dry_run)
 
