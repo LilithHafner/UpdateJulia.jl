@@ -21,7 +21,6 @@ update_julia()
 julia> update_julia()
 installing the latest version of julia: 1.7.0
 ...
-"disk2" ejected.
 Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0
 v"1.7.0"
 
