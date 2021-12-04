@@ -48,7 +48,7 @@ function update_julia(version::AbstractString="";
     dry_run = false,
     verbose = dry_run)
 
-    verbose && display(Base.@locals)
+    @static VERSION >= v"1.1" && verbose && display(Base.@locals)
 
     prereport(v) #TODO should this report more info?
 
