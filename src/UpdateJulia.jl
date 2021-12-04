@@ -110,8 +110,10 @@ function update_julia(version::AbstractString="";
         # create version specific executables, add everything to path, and let the user deal
         # with ordering path entries if they want to.
         bin = join(split(executable, "\\")[1:end-1], "\\")
-        add_to_path(bin)
     end
+
+    isdir(bin) || (println("Making path to $bin"); mkpath(bin))
+    ensure_on_path(bin, systemwide)
 
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
@@ -243,19 +245,23 @@ function extract(install_location, download_file, v)
     end
 end
 
-function add_to_path(bin)
-    @assert Sys.iswindows()
-    isdir(bin) || mkdir(bin)
-    if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
-        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\", \"User\"); }"`)
-        println("Adding $bin to path. Shell/PowerShell restart may be required.")
+function ensure_on_path(bin, systemwide)
+    @static if Sys.iswindows() # Long term solution
+        if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
+            run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\"")); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\"$(systemwide ? "" : ", \"User\"")); }"`)
+            println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
+        end
+    else
+        if !occursin(bin, ENV["PATH"])
+            printstyled("Please add $bin to $path", color=Base.warn_color())
+        end
     end
-    occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin")
+
+    occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin") # Short term solution
 end
 
 ## Link ##
 function link(executable, bin, command, set_default, v)
-    isdir(bin) || (println("Making path to $bin"); mkpath(bin))
     link = joinpath(bin, command)
     symlink_replace(executable, link)
 
