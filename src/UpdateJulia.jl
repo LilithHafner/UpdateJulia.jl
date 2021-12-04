@@ -97,7 +97,7 @@ function update_julia(version::AbstractString="";
 
     if @static Sys.iswindows() && endswith(url, ".exe")
         prefer_gui || printstyled("A GUI installer was available but not an archive.\n", color=Base.warn_color())
-        dry_run && return v
+        dry_run && (println("aborting before download & install"); return v)
         download_delete(url) do file
             mv(file, file*".exe")
             try
@@ -113,7 +113,7 @@ function update_julia(version::AbstractString="";
     end
 
 
-    dry_run && return v
+    dry_run && (println("aborting before download & install"); return v)
     executable = download_delete(url) do file
         extract(install_location, file, v)
     end
