@@ -24,27 +24,16 @@ installing the latest version of julia: 1.7.0
 Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0
 v"1.7.0"
 
-julia> update_julia("1.4", dry_run=true)
-Dict{Symbol, Any} with 14 entries:
-  :os_str           => "..."
-  :dry_run          => true
-  :version          => "1.4"
-  :set_default      => false
-  :force_fetch      => false
-  :prefer_gui       => false
-  :url              => "https://julialang-s3.julialang.org/bin/.../.../1.4/julia-1.4.2-..."
-  :verbose          => true
-  :v                => v"1.4.2"
-  :bin              => "..."
-  :systemwide       => ...
-  :_v_url           => (v"1.4.2", "https://julialang-s3.julialang.org/bin/.../.../1.4/ju…")
-  :install_location => "..."
-  :arch             => "..."
+julia> update_julia("1.4")
 installing julia 1.4.2
 This version is out of date. The latest official release is 1.7.0
-aborting before download & install
+...
+Success! `julia-1.4.2` & `julia-1.4` now to point to 1.4.1
 v"1.4.2"
+```
 
+## Docstring
+```
 help?> update_julia
 search: update_julia
 
@@ -68,20 +57,20 @@ search: update_julia
 
   Destination
 
-    •  systemwide = true install for all users, false only installs for current user.
+    •  systemwide = ... install for all users, false only installs for current user.
 
-    •  install_location = systemwide ? "/Applications" : "/Users/x/Applications" directory
+    •  install_location = systemwide ? "..." : "..." directory
        to put installed binaries
 
-    •  bin = systemwide ? "/usr/local/bin" : "/Users/x/.local/bin" directory to store links
+    •  bin = systemwide ? "..." : "..." directory to store links
        to the binaries
 
   Source
 
-    •  os_str = "mac" string representation of the operating system: "linux", "mac",
+    •  os_str = "..." string representation of the operating system: "linux", "mac",
        "winnt", or "freebsd".
 
-    •  arch = "x86_64" string representation of the CPU architecture: "x86_64", "i686",
+    •  arch = "..." string representation of the CPU architecture: "x86_64", "i686",
        "aarch64", "armv7l", or "powerpc64le".
 
     •  v = ... the VersionNumber to install
@@ -89,7 +78,7 @@ search: update_julia
     •  url = ... URL to download that version from, if you explicitly set url, also
        explicitly set v lest they differ
 ```
-The system dependent portions of info statements are replaced with `...`.
+The system dependent portions are replaced with `...`.
 
 ## Install locations
 
