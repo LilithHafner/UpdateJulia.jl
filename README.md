@@ -38,7 +38,7 @@ Dict{Symbol, Any} with 14 entries:
   :v                => v"1.4.2"
   :bin              => "..."
   :systemwide       => ...
-  :_v_url           => (v"1.4.2", "https://julialang-s3.julialang.org/bin/.../.../1.4/julia-1.4.2-...")
+  :_v_url           => (v"1.4.2", "https://julialang-s3.julialang.org/bin/.../.../1.4/ju…")
   :install_location => "..."
   :arch             => "..."
 installing julia 1.4.2
@@ -53,15 +53,15 @@ search: update_julia
 
   Install the latest version of Julia from https://julialang.org
 
-  If version is provided, installs the latest version that starts with version. If version == "nightly", then installs the bleeding-edge
-  nightly version.
+  If version is provided, installs the latest version that starts with version. If version
+  == "nightly", then installs the bleeding-edge nightly version.
 
   Keyword Arguments
   ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
   Behavior flags
 
-    •  set_default = ... make 'julia' point to installed version.
+    •  set_default = (v == latest()) make 'julia' point to installed version.
 
     •  dry_run = false skip the actual download and instillation
 
@@ -71,21 +71,24 @@ search: update_julia
 
     •  systemwide = true install for all users, false only installs for current user.
 
-    •  install_location = systemwide ? "..." : "..." directory to put installed binaries
+    •  install_location = systemwide ? "/Applications" : "/Users/x/Applications" directory
+       to put installed binaries
 
-    •  bin = systemwide ? "/usr/local/bin" : "/Users/x/.local/bin" directory to store links to the binaries
+    •  bin = systemwide ? "/usr/local/bin" : "/Users/x/.local/bin" directory to store links
+       to the binaries
 
   Source
 
-    •  os_str = "..." string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
+    •  os_str = "mac" string representation of the operating system: "linux", "mac",
+       "winnt", or "freebsd".
 
-    •  arch = "..." string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+    •  arch = "x86_64" string representation of the CPU architecture: "x86_64", "i686",
+       "aarch64", "armv7l", or "powerpc64le".
 
     •  v = ... the VersionNumber to install
 
-    •  url = ... URL to download that version from, if you explicitly set url, also explicitly set v lest they differ
-
-julia>
+    •  url = ... URL to download that version from, if you explicitly set url, also
+       explicitly set v lest they differ
 ```
 The system dependent portions of info statements are replaced with `...`.
 
