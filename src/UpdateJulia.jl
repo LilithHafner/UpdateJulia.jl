@@ -69,7 +69,7 @@ Destination
 - `bin = $(Sys.iswindows() ? nothing : "systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"")` directory to store links to the binaries
 
 Source
-- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
+- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
 - `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
 
 - `v = ...` the `VersionNumber` to install
