@@ -255,6 +255,7 @@ end
 
 ## Link ##
 function link(executable, bin, command, set_default, v)
+    isdir(bin) || (println("Making path to $bin"); mkpath(bin))
     link = joinpath(bin, command)
     symlink_replace(executable, link)
 
