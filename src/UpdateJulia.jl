@@ -253,7 +253,7 @@ function ensure_on_path(bin, systemwide)
         end
     else
         if !occursin(bin, ENV["PATH"])
-            printstyled("Please add $bin to $path", color=Base.warn_color())
+            printstyled("Please add $bin to path", color=Base.warn_color())
         end
     end
 
