@@ -27,6 +27,7 @@ If `version` is provided, installs the latest version that starts with `version`
 If `version` == "nightly", then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
+This list is suggestive and hopefully mostly accurate but not authoritative.
 - `install_location = "$(@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias")"` the path to put installed binaries
 - `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
 - `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
