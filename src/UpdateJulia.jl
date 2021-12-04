@@ -246,18 +246,24 @@ function extract(install_location, download_file, v)
 end
 
 function ensure_on_path(bin, systemwide)
-    @static if Sys.iswindows() # Long term solution
+    @static if Sys.iswindows()
+        # Long term solution
         if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
             run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\"")); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\"$(systemwide ? "" : ", \"User\"")); }"`)
             println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
         end
-    else
-        if !occursin(bin, ENV["PATH"])
-            printstyled("Please add $bin to path", color=Base.warn_color())
-        end
-    end
 
-    occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin") # Short term solution
+        # Short term solution
+        occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin")
+    else
+        # Long term solution
+        if !occursin(bin, ENV["PATH"])
+            printstyled("Please add $bin to path\n", color=Base.warn_color())
+        end
+
+        # Short term solution
+        occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ":$bin")
+    end
 end
 
 ## Link ##
