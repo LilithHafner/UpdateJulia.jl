@@ -270,7 +270,7 @@ function symlink_replace(target, link)
     # Because force is not available via Base.symlink
     @static if Sys.iswindows()
         #Technically this isn't a replacement at all...
-        isfile(link) || run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
+        isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
         run(`ln -sf $target $link`)
         #println("ln -sf $target $link")
