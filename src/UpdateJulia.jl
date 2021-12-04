@@ -27,6 +27,7 @@ If `version` is provided, installs the latest version that starts with `version`
 If `version` == "nightly", then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
+This list is suggestive and hopefully mostly accurate but not authoritative.
 - `install_location = "$(@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias")"` the path to put installed binaries
 - `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
 - `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
@@ -40,13 +41,21 @@ function update_julia(version::AbstractString="";
     bin = (@os nothing "/usr/local/bin"),
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
     arch = string(Base.Sys.ARCH),
-    prefer_gui = false)
+    prefer_gui = false,
+    force_fetch = false,
+    _v_url = v_url(version, os_str, arch, prefer_gui, force_fetch),
+    v = first(_v_url),
+    url = last(_v_url),
+    dry_run = false,
+    verbose = dry_run)
 
-    v, url = v_url(version, os_str, arch, prefer_gui)
-    prereport(v, url)
+    @static VERSION >= v"1.1" && verbose && display(Base.@locals)
+
+    prereport(v) #TODO should this report more info?
 
     if @static Sys.iswindows() && endswith(url, ".exe")
         prefer_gui || printstyled("A GUI installer was available but not an archive.\n", color=Base.warn_color())
+        dry_run && return v
         download_delete(url) do file
             mv(file, file*".exe")
             try
@@ -62,6 +71,7 @@ function update_julia(version::AbstractString="";
     end
 
 
+    dry_run && return v
     executable = download_delete(url) do file
         extract(install_location, file, v)
     end
@@ -92,7 +102,7 @@ function update_julia(version::AbstractString="";
 end
 
 ## Fetch ##
-function v_url(version_str, os_str, arch_str, prefer_gui)
+function v_url(version_str, os_str, arch_str, prefer_gui, force_fetch)
     if version_str == "nightly"
         arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
         arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
@@ -101,7 +111,7 @@ function v_url(version_str, os_str, arch_str, prefer_gui)
 
         nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
     else
-        v = latest(version_str)
+        v = latest(version_str, force_fetch)
 
         options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
         isempty(options) && error("No valid download for \"$version_str\" matching $os_str and $arch_str")
@@ -113,7 +123,7 @@ end
 
 const last_fetched = Ref(0.0)
 const versions = Ref{Dict{VersionNumber, Dict{String, Any}}}()
-function fetch(force=false)
+function fetch(force)
     try
         if force || time() > last_fetched[] + 60*60 # 1 hour
             download_delete("https://julialang-s3.julialang.org/bin/versions.json") do file
@@ -131,8 +141,8 @@ function fetch(force=false)
     end
 end
 
-function latest(prefix="")
-    fetch()
+function latest(prefix="", force=false)
+    fetch(force)
     kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
     isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
     sort!(kys)
@@ -154,15 +164,15 @@ function nightly(url="https://raw.githubusercontent.com/JuliaLang/julia/master/V
     end
 end
 
-function prereport(v, url)
+function prereport(v)
     if v == latest()
-        printstyled("installing the latest version of julia ($v) from $url\n", color = :green)
+        printstyled("installing the latest version of julia: $v\n", color = :green)
     elseif "DEV" ∈ v.prerelease
-        printstyled("installing julia $v from $url\n"*
+        printstyled("installing julia $v\n"*
         "This version is an expiremental development build not reccomended for most users. "*
         "The latest official release is $(latest())\n", color = :red)
     else
-        printstyled("installing julia $v from $url\n", color = :yellow)
+        printstyled("installing julia $v\n", color = :yellow)
         printstyled("This version is $(v > latest() ? "un-released" : "out of date"). "*
         "The latest official release is $(latest())\n", color = :yellow)
     end
