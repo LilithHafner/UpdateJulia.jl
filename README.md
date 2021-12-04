@@ -92,7 +92,7 @@ The system dependent portions of info statements are replaced with `...`.
 ## Install locations
 
 OS     | System install  | System bin                                | User install              | User bin
--      | -               | -                                         | -                         | -
+-------|-----------------|-------------------------------------------|---------------------------|----------
 unix   | `/opt`          | `/usr/local/bin`                          | `~/.local   `             | `~/.local/bin`
 mac    | `/Applications` | `/usr/local/bin`                          | `~/Applications`          | `~/.local/bin`
 windows| `\Program Files`| automatically add install location to path| `~\AppData\Local\Programs`| automatically add install location to path
