@@ -216,8 +216,9 @@ end
 
 ## Extract ##
 function extract(install_location, download_file, v)
+    isdir(install_location) || (println("Making path to $install_location"); mkpath(install_location))
     @static if Sys.iswindows()
-        before = isdir(install_location) ? readdir(install_location) : []
+        before = readdir(install_location)
         run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
         after = readdir(install_location)
         new = filter(x->startswith(x, "julia-"), setdiff(after, before))
