@@ -27,7 +27,9 @@ function default_install_location(systemwide, v)
     current = dirname(dirname(
         @static Sys.isapple() ? dirname(dirname(dirname(Base.Sys.BINDIR))) : Base.Sys.BINDIR))
 
-    if current == default || (@static Sys.isunix() && (@static !Sys.isapple() && (
+    if systemwide == startswith(Base.Sys.BINDIR, homedir())
+        default # installing at a different systemwide level
+    elseif current == default || (@static Sys.isunix() && (@static !Sys.isapple() && (
                                 ( systemwide && startswith(current, "/opt/julia")) ||
                                 (!systemwide && startswith(current, homedir()   )) )))
         current # current is already a conventional location
