@@ -291,7 +291,7 @@ function link(executable, bin, command, set_default, systemwide, v)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
         link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
-        if systemwide && !startswith(link, homedir())
+        if !systemwide && !startswith(link, homedir())
             printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
         else
             printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
