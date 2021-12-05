@@ -137,7 +137,7 @@ function update_julia(version::AbstractString="";
     set_default && push!(commands, "julia")
 
     for command in commands
-        link(executable, bin, command * (@os ".exe" ""), set_default, v)
+        link(executable, bin, command * (@os ".exe" ""), set_default, systemwide, v)
     end
 
     union!(commands, ["julia"])
@@ -285,14 +285,18 @@ function ensure_on_path(bin, systemwide)
 end
 
 ## Link ##
-function link(executable, bin, command, set_default, v)
+function link(executable, bin, command, set_default, systemwide, v)
     link = joinpath(bin, command)
     symlink_replace(executable, link)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
         link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
-        printstyled("Replacing symlink @ $link\n", color=Base.info_color())
-        symlink_replace(executable, link)
+        if systemwide && !startswith(link, homedir())
+            printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
+        else
+            printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
+            symlink_replace(executable, link)
+        end
     end
 end
 
