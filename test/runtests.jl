@@ -3,6 +3,8 @@ using Test
 
 @testset "UpdateJulia.jl" begin
 
+    display(@doc update_julia)
+    println()
     #TODO optimize testing
 
     printstyled("WARNING: this will both install out of date julia versions and change what the command `julia` points to.\n", color=Base.warn_color())
