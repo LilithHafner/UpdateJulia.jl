@@ -140,7 +140,7 @@ function update_julia(version::AbstractString="";
         link(executable, bin, command * (@os ".exe" ""), set_default, v)
     end
 
-    !set_default && push!(commands, "julia")
+    union!(commands, ["julia"])
     report(commands, v)
 
     v
