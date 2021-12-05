@@ -115,8 +115,8 @@ function update_julia(version::AbstractString="";
 
 
     dry_run && (println("aborting before download & install"); return v)
-    try
-        executable = download_delete(url) do file
+    executable = try
+        download_delete(url) do file
             extract(install_location, file, v)
         end
     catch x
