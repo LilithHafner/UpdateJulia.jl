@@ -64,8 +64,8 @@ end
     @static if Sys.iswindows()
         @test_skip "path management"
     else
-        @test_skip UpdateJulia.test("julia-1.7", "1.7.0-rc3") Depends on what the latest 1.7 release is
-        @test_skip UpdateJulia.test("julia-1.5", "1.5.1") Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
+        @test_skip UpdateJulia.test("julia-1.7", "1.7.0-rc3") # Depends on what the latest 1.7 release is
+        @test_skip UpdateJulia.test("julia-1.5", "1.5.1") # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
         @test update_julia("1.5") >= v"1.5.3"
         @test UpdateJulia.test("julia", v_latest)
     end
