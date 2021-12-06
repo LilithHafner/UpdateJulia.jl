@@ -18,27 +18,64 @@ macro os(windows, apple=windows, freebsd=apple, linux=freebsd, other=linux)
     end
 end
 
+function default_install_location(systemwide, v)
+    default = if systemwide
+        @os "\\Program Files" "/Applications" "/opt"
+    else
+        (joinpath(homedir(), (@os "AppData\\Local\\Programs" "Applications" ".local")))
+    end
+    current = dirname(dirname(
+        @static Sys.isapple() ? dirname(dirname(dirname(Base.Sys.BINDIR))) : Base.Sys.BINDIR))
+
+    if systemwide == startswith(Base.Sys.BINDIR, homedir())
+        default # installing at a different systemwide level
+    elseif current == default || (@static Sys.isunix() && (@static !Sys.isapple() && (
+                                ( systemwide && startswith(current, "/opt/julia")) ||
+                                (!systemwide && startswith(current, homedir()   )) )))
+        current # current is already a conventional location
+    elseif v === nothing
+        "$default\" or \"$current"
+    else
+        println("julia-$VERSION is currently installed in $current. Install julia-$v in $default instead? Y/n")
+        response = readline(stdin)
+        if isempty(response) || uppercase(first(response)) == 'Y'
+            default
+        elseif uppercase(first(response)) == 'N'
+            current
+        else
+            error("Unknown input: $response. Expected 'y' or 'n'.")
+        end
+    end
+end
+
 """
     update_julia(version::AbstractString="")
 
-Install the latest version of julia from https://julialang.org
+Install the latest version of Julia from https://julialang.org
 
 If `version` is provided, installs the latest version that starts with `version`.
-If `version` == "nightly", then installs the bleeding-edge nightly version.
+If `version == "nightly"`, then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
-This list is suggestive and hopefully mostly accurate but not authoritative.
-- `install_location = "$(@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias")"` the path to put installed binaries
-- `bin = "$(@os "$(homedir())\\AppData\\Local\\Programs\\julia-bin" "/usr/local/bin")"` the place to store links to the binaries
-- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` the string representation of the opperating system: "linux", "mac", "winnt", or "freebsd".
-- `arch = "$(@static Sys.WORD_SIZE == 64 ? "x86_64" : "i686")"` the string representation of the cpu archetecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
-- `set_default = $(@os "false" "(version == \"\")")` wheather to overwrite exisitng path entries of higher priority (not supported on windows).
-- `prefer_gui = false` wheather to prefer using the "installer" version rather than downloading the "archive" version and letting UpdateJulia automatically install it (only supported on windows).
+Behavior flags
+$(Sys.iswindows() ? "" : "- `set_default = (v == latest())` make 'julia' point to installed version.")
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
+- `dry_run = false` skip the actual download and instillation
+- `verbose = dry_run` print the final value of all arguments
+
+Destination
+- `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
+- `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
+$(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
+
+Source
+- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
+- `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+
+- `v = ...` the `VersionNumber` to install
+- `url = ...` URL to download that version from, if you explicitly set `url`, also explicitly set `v` lest they differ
 """
 function update_julia(version::AbstractString="";
-    set_default = (@static Sys.iswindows() ? false : version==""),
-    install_location = (@os "$(homedir())\\AppData\\Local\\Programs" "/Applications" "/opt/julias"),
-    bin = (@os nothing "/usr/local/bin"),
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
     arch = string(Base.Sys.ARCH),
     prefer_gui = false,
@@ -46,16 +83,22 @@ function update_julia(version::AbstractString="";
     _v_url = v_url(version, os_str, arch, prefer_gui, force_fetch),
     v = first(_v_url),
     url = last(_v_url),
+    set_default = (@static Sys.iswindows() ? false : v==latest()),
+    systemwide = !startswith(Base.Sys.BINDIR, homedir()),
+    install_location = default_install_location(systemwide, v),
+    bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
     dry_run = false,
     verbose = dry_run)
 
     @static VERSION >= v"1.1" && verbose && display(Base.@locals)
+    @static Sys.iswindows() && set_default && (println("set_default=true not supported for windows"); set_default=false)
+    @static Sys.iswindows() && bin !== nothing && (println("bin not supported for windows"); bin=nothing)
 
     prereport(v) #TODO should this report more info?
 
     if @static Sys.iswindows() && endswith(url, ".exe")
         prefer_gui || printstyled("A GUI installer was available but not an archive.\n", color=Base.warn_color())
-        dry_run && return v
+        dry_run && (println("aborting before download & install"); return v)
         download_delete(url) do file
             mv(file, file*".exe")
             try
@@ -71,9 +114,18 @@ function update_julia(version::AbstractString="";
     end
 
 
-    dry_run && return v
-    executable = download_delete(url) do file
-        extract(install_location, file, v)
+    dry_run && (println("aborting before download & install"); return v)
+    executable = try
+        download_delete(url) do file
+            extract(install_location, file, v)
+        end
+    catch x
+        if x isa Base.IOError && systemwide && occursin("permission denied", x.msg)
+            printstyled("Permission denied attempting to perform a systemwide instilation."*
+                "Try again with `systemwide=false` or run with elevated permissions.\n",
+                color=Base.error_color())
+        end
+        rethrow()
     end
 
     @static if Sys.iswindows()
@@ -85,17 +137,19 @@ function update_julia(version::AbstractString="";
         # create version specific executables, add everything to path, and let the user deal
         # with ordering path entries if they want to.
         bin = join(split(executable, "\\")[1:end-1], "\\")
-        add_to_path(bin)
     end
+
+    isdir(bin) || (println("Making path to $bin"); mkpath(bin))
+    ensure_on_path(bin, systemwide)
 
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
 
     for command in commands
-        link(executable, bin, command * (@os ".exe" ""), set_default, v)
+        link(executable, bin, command * (@os ".exe" ""), set_default, systemwide, v)
     end
 
-    !set_default && push!(commands, "julia")
+    union!(commands, ["julia"])
     report(commands, v)
 
     v
@@ -191,8 +245,9 @@ end
 
 ## Extract ##
 function extract(install_location, download_file, v)
+    isdir(install_location) || (println("Making path to $install_location"); mkpath(install_location))
     @static if Sys.iswindows()
-        before = isdir(install_location) ? readdir(install_location) : []
+        before = readdir(install_location)
         run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
         after = readdir(install_location)
         new = filter(x->startswith(x, "julia-"), setdiff(after, before))
@@ -217,25 +272,40 @@ function extract(install_location, download_file, v)
     end
 end
 
-function add_to_path(bin)
-    @assert Sys.iswindows()
-    isdir(bin) || mkdir(bin)
-    if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
-        run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\", \"User\"); }"`)
-        println("Adding $bin to path. Shell/PowerShell restart may be required.")
+function ensure_on_path(bin, systemwide)
+    @static if Sys.iswindows()
+        # Long term solution
+        if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
+            run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\"")); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\"$(systemwide ? "" : ", \"User\"")); }"`)
+            println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
+        end
+
+        # Short term solution
+        occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin")
+    else
+        # Long term solution
+        if !occursin(bin, ENV["PATH"])
+            printstyled("Please add $bin to path\n", color=Base.warn_color())
+        end
+
+        # Short term solution
+        occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ":$bin")
     end
-    occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin")
 end
 
 ## Link ##
-function link(executable, bin, command, set_default, v)
+function link(executable, bin, command, set_default, systemwide, v)
     link = joinpath(bin, command)
     symlink_replace(executable, link)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
         link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
-        printstyled("Replacing symlink @ $link\n", color=Base.info_color())
-        symlink_replace(executable, link)
+        if !systemwide && !startswith(link, homedir())
+            printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
+        else
+            printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
+            symlink_replace(executable, link)
+        end
     end
 end
 
@@ -243,7 +313,7 @@ function symlink_replace(target, link)
     # Because force is not available via Base.symlink
     @static if Sys.iswindows()
         #Technically this isn't a replacement at all...
-        isfile(link) || run(`cmd.exe -nologo -noprofile /c "mklink /H $link $target"`)
+        isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
         run(`ln -sf $target $link`)
         #println("ln -sf $target $link")
