@@ -146,6 +146,7 @@ function update_julia(version::AbstractString="";
     set_default && push!(commands, "julia")
 
     for command in commands
+        println("A1: ", join([executable, bin, command, v], ", "))
         link(executable, bin, command * (@os ".exe" ""), set_default, systemwide, v)
     end
 
@@ -304,6 +305,7 @@ function link(executable, bin, command, set_default, systemwide, v)
             printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
         else
             printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
+            println("A2: ", join([executable, link], ", "))
             symlink_replace(executable, link)
         end
     end
@@ -329,6 +331,7 @@ end
 
 function test(command, version)
     try
+        println("A3: ", join([command, version], ", "))
         open(f->read(f, String), `$command -v`) == "julia version $version\n"
     catch
         println("Expected error 1")
