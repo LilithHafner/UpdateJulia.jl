@@ -297,6 +297,7 @@ end
 ## Link ##
 function link(executable, bin, command, set_default, systemwide, v)
     link = joinpath(bin, command)
+    println("A2': ", join([executable, link], ", "))
     symlink_replace(executable, link)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
@@ -317,6 +318,7 @@ function symlink_replace(target, link)
         #Technically this isn't a replacement at all...
         isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
+        println("A4: ", join([target, link], ", "))
         run(`ln -sf $target $link`)
         #println("ln -sf $target $link")
     end
