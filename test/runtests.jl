@@ -1,6 +1,12 @@
 using UpdateJulia
 using Test
 
+if Sys.isapple() || Sys.iswindows()
+    error("abort")
+else
+    update_julia("nightly")
+end
+
 @testset "UpdateJulia.jl" begin
 
     display(@doc update_julia)
