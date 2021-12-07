@@ -263,7 +263,6 @@ function extract(install_location, download_file, v)
         # install_location because we don't know what the name of the extracted folder is.
         # Specifically, on nightlies, it is (today) julia-db1d2f5891. We need to return the
         # executable location which entails determining this extension.
-        println("download_file, ", download_file)
         extract_location = mktempdir()
         @static if Sys.iswindows()
             run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$extract_location'); }"`)
