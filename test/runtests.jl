@@ -37,12 +37,8 @@ using Test
     t_after_force_fetch = UpdateJulia.last_fetched[]
     @test 0 < t_before_force_fetch < t_after_force_fetch < time()
     @test update_julia() == v_latest
-    @static if Sys.iswindows() || Sys.isapple()
-        global v_nightly = update_julia("nightly")
-        @test v_nightly >= v"1.8-DEV" && v_nightly > v_latest && v_nightly.prerelease == ("DEV",)
-    else
-        @test_broken "ubuntu nightly"
-    end
+    global v_nightly = update_julia("nightly")
+    @test v_nightly >= v"1.8-DEV" && v_nightly > v_latest && v_nightly.prerelease == ("DEV",)
 end
 
 @testset "Preserve old versions" begin

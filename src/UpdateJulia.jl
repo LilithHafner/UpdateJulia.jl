@@ -246,29 +246,40 @@ end
 ## Extract ##
 function extract(install_location, download_file, v)
     isdir(install_location) || (println("Making path to $install_location"); mkpath(install_location))
-    @static if Sys.iswindows()
-        before = readdir(install_location)
-        run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
-        after = readdir(install_location)
-        new = filter(x->startswith(x, "julia-"), setdiff(after, before))
-        "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v"), force=true)
 
-        joinpath(install_location, "julia-$v", "bin", "julia.exe")
-    elseif Sys.isapple()
+    @static if Sys.isapple()
         run(`hdiutil attach $download_file`)
         volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
+        folder = last(volumes)
         try
-            cp("/Volumes/$(last(volumes))/Julia-$(v.major).$(v.minor).app", "$install_location/Julia-$v.app", force=true)
+            cp("/Volumes/$folder/Julia-$(v.major).$(v.minor).app", "$install_location/$folder.app", force=true)
         finally
             for volume in volumes
                 run(`hdiutil detach /Volumes/$volume`)
             end
         end
-        "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
+        "$install_location/$folder.app/Contents/Resources/julia/bin/julia"
     else
-        mkpath(install_location)
-        run(`tar zxf $download_file -C $install_location`)
-        "$install_location/julia-$v/bin/julia"
+        # We have to extract to a temporary location instead of directly into
+        # install_location because we don't know what the name of the extracted folder is.
+        # Specifically, on nightlies, it is (today) julia-db1d2f5891. We need to return the
+        # executable location which entails determining this extension.
+        extract_location = mktempdir()
+        @static if Sys.iswindows()
+            run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$extract_location'); }"`)
+        else
+            run(`tar zxf $download_file -C $extract_location`)
+        end
+        folders = readdir(extract_location)
+        @assert length(folders) == 1
+        folder = first(folders)
+        folder == "julia-$v" || startswith(folder, "julia-") && v.prerelease == ("DEV",) ||
+            @warn "Unexpected install folder: $folder"
+
+        mv(joinpath(extract_location, folder), joinpath(install_location, folder), force=true)
+        rm(extract_location)
+
+        joinpath(install_location, folder, "bin", @os "julia.exe" "julia")
     end
 end
 
@@ -316,7 +327,6 @@ function symlink_replace(target, link)
         isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
         run(`ln -sf $target $link`)
-        #println("ln -sf $target $link")
     end
 end
 
@@ -328,17 +338,7 @@ function report(commands, version)
 end
 
 function test(command, version)
-    try
-        open(f->read(f, String), `$command -v`) == "julia version $version\n"
-    catch
-        println("Expected error 1")
-        println(command)
-        println(version)
-        println(ENV["PATH"])
-        println(occursin("/usr/local/bin", ENV["PATH"]))
-        println("julia-1.8.0-DEV" ∈ readdir("/usr/local/bin"))
-        rethrow()
-    end
+    open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
 end
