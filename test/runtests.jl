@@ -33,7 +33,7 @@ using Test
     @test update_julia("1.7.0-rc1", dry_run = true, verbose = false) == v"1.7.0-rc1"
     @test update_julia("1.7.0-rc1") == v"1.7.0-rc1"
     t_before_force_fetch = UpdateJulia.last_fetched[]
-    @test update_julia("1.7.0-rc3", force_fetch = true) == v"1.7.0-rc3"
+    @test update_julia("1.7.0-rc3", fetch = true) == v"1.7.0-rc3"
     t_after_force_fetch = UpdateJulia.last_fetched[]
     @test 0 < t_before_force_fetch < t_after_force_fetch < time()
     @test update_julia() == v_latest
