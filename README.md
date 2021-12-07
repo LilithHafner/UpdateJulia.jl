@@ -93,6 +93,5 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 \* Unix has somewhat loose conventions for install locations. If you already have Julia installed in a location that falls within those conventions, UpdateJulia will install the new version of Julia right next to the one you are currently using.
 
 ## Known issues (contributions welcome!)
-- Cannot install nightly builds on ubuntu
 - Does not automatically migrate `Project.toml` and run `Pkg.update()`.
 - Management of multiple versions on Windows is annoying. As with other opperating systems, UpdateJulia will install new versions which can be reached via the commands `julia`, `julia-major.minor` (e.g. `julia-1.6`) or `julia-major.minor.patch` (e.g. `julia-1.6.4`), but because we append to the path variable, older installations will take precedence where there are name conflicts. You can manually edit your path variables by pressing windows+r enterting `rundll32 sysdm.cpl,EditEnvironmentVariables`, and pressing ok.
