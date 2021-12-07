@@ -4,6 +4,51 @@ export update_julia
 
 using JSON, Suppressor
 
+## Version fetching ##
+const last_fetched = Ref(0.0)
+const versions = Ref{Dict{VersionNumber, Dict{String, Any}}}()
+function fetch(force)
+    try
+        if force || time() > last_fetched[] + 60*60 # 1 hour
+            download_delete("https://julialang-s3.julialang.org/bin/versions.json") do file
+                open(file) do io
+                    versions[] = Dict(VersionNumber(k)=>v for (k, v) in JSON.parse(read(io, String)))
+                    last_fetched[] = time()
+                    nothing
+                end
+            end
+        end
+    catch
+        if force || time() > last_fetched[] + 24*60*60
+            rethrow()
+        end
+    end
+end
+
+function latest(prefix="", force=false)
+    fetch(force)
+    kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
+    isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
+    sort!(kys)
+    sort!(kys, by=x->isempty(x.prerelease))
+    last(kys)
+end
+
+const nightly_version = Ref{VersionNumber}()
+function nightly(url="https://raw.githubusercontent.com/JuliaLang/julia/master/VERSION")
+    try
+        contents = download_delete(url) do file
+            open(file) do io
+                read(io, String)
+            end
+        end
+        nightly_version[] = VersionNumber(contents)
+    catch
+        nightly_version[]
+    end
+end
+
+## Keyword argument helpers ##
 macro os(windows, apple=windows, freebsd=apple, linux=freebsd, other=linux)
     @static if Sys.iswindows()
         windows
@@ -48,6 +93,26 @@ function default_install_location(systemwide, v)
     end
 end
 
+function v_url(version_str, os_str, arch_str, prefer_gui, force_fetch)
+    if version_str == "nightly"
+        arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
+        arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
+        os_append = os_str == "winnt" ? "win" : os_str
+        extension = @static Sys.iswindows() ?  (prefer_gui ? "exe" : "zip") : (@static Sys.isapple() ?  "dmg" : "tar.gz")
+
+        nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
+    else
+        v = latest(version_str, force_fetch)
+
+        options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
+        isempty(options) && error("No valid download for \"$version_str\" matching os=\"$os_str\" and arch=\"$arch_str\"")
+        sort!(options, by = x->x["kind"], rev=prefer_gui)
+
+        v, first(options)["url"]
+    end
+end
+
+## Main ##
 """
     update_julia(version::AbstractString="")
 
@@ -155,69 +220,7 @@ function update_julia(version::AbstractString="";
     v
 end
 
-## Fetch ##
-function v_url(version_str, os_str, arch_str, prefer_gui, force_fetch)
-    if version_str == "nightly"
-        arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
-        arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
-        os_append = os_str == "winnt" ? "win" : os_str
-        extension = @static Sys.iswindows() ?  (prefer_gui ? "exe" : "zip") : (@static Sys.isapple() ?  "dmg" : "tar.gz")
-
-        nightly(), "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
-    else
-        v = latest(version_str, force_fetch)
-
-        options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
-        isempty(options) && error("No valid download for \"$version_str\" matching os=\"$os_str\" and arch=\"$arch_str\"")
-        sort!(options, by = x->x["kind"], rev=prefer_gui)
-
-        v, first(options)["url"]
-    end
-end
-
-const last_fetched = Ref(0.0)
-const versions = Ref{Dict{VersionNumber, Dict{String, Any}}}()
-function fetch(force)
-    try
-        if force || time() > last_fetched[] + 60*60 # 1 hour
-            download_delete("https://julialang-s3.julialang.org/bin/versions.json") do file
-                open(file) do io
-                    versions[] = Dict(VersionNumber(k)=>v for (k, v) in JSON.parse(read(io, String)))
-                    last_fetched[] = time()
-                    nothing
-                end
-            end
-        end
-    catch
-        if force || time() > last_fetched[] + 24*60*60
-            rethrow()
-        end
-    end
-end
-
-function latest(prefix="", force=false)
-    fetch(force)
-    kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
-    isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
-    sort!(kys)
-    sort!(kys, by=x->isempty(x.prerelease))
-    last(kys)
-end
-
-const nightly_version = Ref{VersionNumber}()
-function nightly(url="https://raw.githubusercontent.com/JuliaLang/julia/master/VERSION")
-    try
-        contents = download_delete(url) do file
-            open(file) do io
-                read(io, String)
-            end
-        end
-        nightly_version[] = VersionNumber(contents)
-    catch
-        nightly_version[]
-    end
-end
-
+## Prereport ##
 function prereport(v)
     if v == latest()
         printstyled("installing the latest version of julia: $v\n", color = :green)
@@ -283,6 +286,7 @@ function extract(install_location, download_file, v)
     end
 end
 
+## Link ##
 function ensure_on_path(bin, systemwide)
     @static if Sys.iswindows()
         # Long term solution
@@ -304,7 +308,6 @@ function ensure_on_path(bin, systemwide)
     end
 end
 
-## Link ##
 function link(executable, bin, command, set_default, systemwide, v)
     link = joinpath(bin, command)
     symlink_replace(executable, link)
