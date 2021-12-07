@@ -1,6 +1,8 @@
 using UpdateJulia
 using Test
 
+update_julia("nightly", verbose=true)
+
 @testset "UpdateJulia.jl" begin
 
     display(@doc update_julia)
