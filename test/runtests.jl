@@ -4,7 +4,7 @@ using Test
 if Sys.isapple() || Sys.iswindows()
     error("abort")
 else
-    update_julia("nightly")
+    update_julia("nightly", verbose=true)
 end
 
 @testset "UpdateJulia.jl" begin
