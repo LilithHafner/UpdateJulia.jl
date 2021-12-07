@@ -248,15 +248,8 @@ end
 ## Extract ##
 function extract(install_location, download_file, v)
     isdir(install_location) || (println("Making path to $install_location"); mkpath(install_location))
-    @static if Sys.iswindows()
-        before = readdir(install_location)
-        run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
-        after = readdir(install_location)
-        new = filter(x->startswith(x, "julia-"), setdiff(after, before))
-        "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v"), force=true)
 
-        joinpath(install_location, "julia-$v", "bin", "julia.exe")
-    elseif Sys.isapple()
+    @static if Sys.isapple()
         run(`hdiutil attach $download_file`)
         volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
         try
@@ -268,9 +261,21 @@ function extract(install_location, download_file, v)
         end
         "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
     else
-        mkpath(install_location)
-        run(`tar zxf $download_file -C $install_location`)
-        "$install_location/julia-$v/bin/julia"
+        # TODO this before/after situation is to determine where we extracted to.
+        # It is hacky and potentially buggy. We should somehow tell the extractor the target
+        # location `joinpath(install_location, "julia-$v")` and get it right the first time.
+        # or extract to a temporary directory and then copy in, as mac does.
+        before = readdir(install_location)
+        @static if Sys.iswindows()
+            run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
+        else
+            run(`tar zxf $download_file -C $install_location`)
+        end
+        after = readdir(install_location)
+        new = filter(x->startswith(x, "julia-"), setdiff(after, before))
+        "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v"), force=true)
+
+        joinpath(install_location, "julia-$v", "bin", @os "julia.exe" "julia")
     end
 end
 
