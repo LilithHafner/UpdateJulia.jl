@@ -333,6 +333,12 @@ end
 
 function test(command, version)
     try
+        run(`ls /opt/julia-1.8.0-DEV/bin`)
+        run(`ls -l /opt/julia-1.8.0-DEV/bin`)
+        run(`ls -le /opt/julia-1.8.0-DEV/bin`)
+        println(isfile("/opt/julia-1.8.0-DEV/bin/julia)"))
+        println(stat("/opt/julia-1.8.0-DEV/bin/julia)"))
+        run(`/opt/julia-1.8.0-DEV/bin/julia -v`)
         println("A3: ", join([command, version], ", "))
         open(f->read(f, String), `$command -v`) == "julia version $version\n"
     catch
