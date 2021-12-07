@@ -273,7 +273,7 @@ function extract(install_location, download_file, v)
         folders = readdir(extract_location)
         @assert length(folders) == 1
         folder = first(folders)
-        folder == "julia-$v" || (startswith(folder, "julia-") && v.prerelease == ("DEV",) ||
+        folder == "julia-$v" || startswith(folder, "julia-") && v.prerelease == ("DEV",) ||
             @warn "Unexpected install folder: $folder"
 
         mv(joinpath(extract_location, folder), joinpath(install_location, folder), force=true)
