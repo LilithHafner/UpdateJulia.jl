@@ -118,7 +118,6 @@ function update_julia(version::AbstractString="";
     executable = try
         download_delete(url) do file
             extract(install_location, file, v)
-            run(`ls /opt`)
         end
     catch x
         if x isa Base.IOError && systemwide && occursin("permission denied", x.msg)
@@ -265,15 +264,16 @@ function extract(install_location, download_file, v)
         # It is hacky and potentially buggy. We should somehow tell the extractor the target
         # location `joinpath(install_location, "julia-$v")` and get it right the first time.
         # or extract to a temporary directory and then copy in, as mac does.
-        before = readdir(install_location)
+        extract_location = mktempdir()
         @static if Sys.iswindows()
-            run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$install_location'); }"`)
+            run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$extract_location'); }"`)
         else
-            run(`tar zxf $download_file -C $install_location`)
+            run(`tar zxf $download_file -C $extract_location`)
         end
-        after = readdir(install_location)
-        new = filter(x->startswith(x, "julia-"), setdiff(after, before))
-        "julia-$v" ∉ new && length(new)==1 && mv(joinpath(install_location, first(new)), joinpath(install_location, "julia-$v"), force=true)
+        folders = readdir(extract_location)
+        @assert length(files) == 1
+
+        mv(joinpath(extract_location, first(folders)), joinpath(install_location, "julia-$v"))
 
         joinpath(install_location, "julia-$v", "bin", @os "julia.exe" "julia")
     end
