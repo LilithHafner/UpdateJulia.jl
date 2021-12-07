@@ -271,7 +271,7 @@ function extract(install_location, download_file, v)
             run(`tar zxf $download_file -C $extract_location`)
         end
         folders = readdir(extract_location)
-        @assert length(files) == 1
+        @assert length(folders) == 1
 
         mv(joinpath(extract_location, first(folders)), joinpath(install_location, "julia-$v"))
 
@@ -303,7 +303,6 @@ end
 ## Link ##
 function link(executable, bin, command, set_default, systemwide, v)
     link = joinpath(bin, command)
-    println("A2': ", join([executable, link], ", "))
     symlink_replace(executable, link)
 
     if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
@@ -312,7 +311,6 @@ function link(executable, bin, command, set_default, systemwide, v)
             printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
         else
             printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
-            println("A2: ", join([executable, link], ", "))
             symlink_replace(executable, link)
         end
     end
@@ -324,9 +322,7 @@ function symlink_replace(target, link)
         #Technically this isn't a replacement at all...
         isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
-        println("A4: ", join([target, link], ", "))
         run(`ln -sf $target $link`)
-        #println("ln -sf $target $link")
     end
 end
 
@@ -338,24 +334,7 @@ function report(commands, version)
 end
 
 function test(command, version)
-    try
-        run(`ls /opt/julia-1.8.0-DEV/bin`)
-        run(`ls -l /opt/julia-1.8.0-DEV/bin`)
-        run(`ls -le /opt/julia-1.8.0-DEV/bin`)
-        println(isfile("/opt/julia-1.8.0-DEV/bin/julia)"))
-        println(stat("/opt/julia-1.8.0-DEV/bin/julia)"))
-        run(`/opt/julia-1.8.0-DEV/bin/julia -v`)
-        println("A3: ", join([command, version], ", "))
-        open(f->read(f, String), `$command -v`) == "julia version $version\n"
-    catch
-        println("Expected error 1")
-        println(command)
-        println(version)
-        println(ENV["PATH"])
-        println(occursin("/usr/local/bin", ENV["PATH"]))
-        println("julia-1.8.0-DEV" ∈ readdir("/usr/local/bin"))
-        rethrow()
-    end
+    open(f->read(f, String), `$command -v`) == "julia version $version\n"
 end
 
 end
