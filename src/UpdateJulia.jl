@@ -191,7 +191,7 @@ function update_julia(version::AbstractString="";
         # would be much more work to use the more effective unix approach. For now, we
         # create version specific executables, add everything to path, and let the user deal
         # with ordering path entries if they want to.
-        bin = join(split(executable, "\\")[1:end-1], "\\")
+        bin = dirname(executable)
     end
 
     isdir(bin) || (println("Making path to $bin"); mkpath(bin))
