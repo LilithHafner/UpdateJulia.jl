@@ -259,10 +259,11 @@ function extract(install_location, download_file, v)
         end
         "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
     else
-        # TODO this before/after situation is to determine where we extracted to.
-        # It is hacky and potentially buggy. We should somehow tell the extractor the target
-        # location `joinpath(install_location, "julia-$v")` and get it right the first time.
-        # or extract to a temporary directory and then copy in, as mac does.
+        # We have to extract to a temporary location instead of directly into
+        # install_location because we don't know what the name of the extracted folder is.
+        # Specifically, on nightlies, it is julia-30fe8cc where 30fe8cc is the truncated
+        # commit hash, and we want it to be julia-DEV (or do we...!)
+        println("download_file, ", download_file)
         extract_location = mktempdir()
         @static if Sys.iswindows()
             run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$extract_location'); }"`)
