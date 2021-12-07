@@ -261,8 +261,8 @@ function extract(install_location, download_file, v)
     else
         # We have to extract to a temporary location instead of directly into
         # install_location because we don't know what the name of the extracted folder is.
-        # Specifically, on nightlies, it is julia-30fe8cc where 30fe8cc is the truncated
-        # commit hash, and we want it to be julia-DEV (or do we...!)
+        # Specifically, on nightlies, it is (today) julia-db1d2f5891. We need to return the
+        # executable location which entails determining this extension.
         println("download_file, ", download_file)
         extract_location = mktempdir()
         @static if Sys.iswindows()
@@ -272,10 +272,14 @@ function extract(install_location, download_file, v)
         end
         folders = readdir(extract_location)
         @assert length(folders) == 1
+        folder = first(folders)
+        folder == "julia-$v" || (startswith(folder, "julia-") && v.prerelease == ("DEV",) ||
+            @warn "Unexpected install folder: $folder"
 
-        mv(joinpath(extract_location, first(folders)), joinpath(install_location, "julia-$v"))
+        mv(joinpath(extract_location, folder), joinpath(install_location, folder), force=true)
+        rm(extract_location)
 
-        joinpath(install_location, "julia-$v", "bin", @os "julia.exe" "julia")
+        joinpath(install_location, folder, "bin", @os "julia.exe" "julia")
     end
 end
 
