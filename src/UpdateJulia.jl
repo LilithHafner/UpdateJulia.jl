@@ -146,7 +146,6 @@ function update_julia(version::AbstractString="";
     set_default && push!(commands, "julia")
 
     for command in commands
-        println("A1: ", join([executable, bin, command, v], ", "))
         link(executable, bin, command * (@os ".exe" ""), set_default, systemwide, v)
     end
 
