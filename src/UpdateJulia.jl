@@ -250,14 +250,15 @@ function extract(install_location, download_file, v)
     @static if Sys.isapple()
         run(`hdiutil attach $download_file`)
         volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
+        folder = last(volumes)
         try
-            cp("/Volumes/$(last(volumes))/Julia-$(v.major).$(v.minor).app", "$install_location/Julia-$v.app", force=true)
+            cp("/Volumes/$folder/Julia-$(v.major).$(v.minor).app", "$install_location/$folder.app", force=true)
         finally
             for volume in volumes
                 run(`hdiutil detach /Volumes/$volume`)
             end
         end
-        "$install_location/Julia-$v.app/Contents/Resources/julia/bin/julia"
+        "$install_location/$folder.app/Contents/Resources/julia/bin/julia"
     else
         # We have to extract to a temporary location instead of directly into
         # install_location because we don't know what the name of the extracted folder is.
