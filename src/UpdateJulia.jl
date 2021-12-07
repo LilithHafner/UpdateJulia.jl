@@ -118,6 +118,7 @@ function update_julia(version::AbstractString="";
     executable = try
         download_delete(url) do file
             extract(install_location, file, v)
+            run(`ls /opt`)
         end
     catch x
         if x isa Base.IOError && systemwide && occursin("permission denied", x.msg)
