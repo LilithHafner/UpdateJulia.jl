@@ -350,7 +350,7 @@ function insert_path(path, entry, v)
     println(first_worse_or_eq)
 
     # skip operation if `entry` already meets above guidelines
-    entry ∈ entries[last_better+1:first_worse_or_eq] && return path
+    entry ∈ entries[last_better+1:min(end, first_worse_or_eq)] && return path
 
     join(insert!(entries, first_worse_or_eq, entry), ";")
 end
