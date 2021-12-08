@@ -78,3 +78,10 @@ end
     @test_skip UpdateJulia.version_of("julia-1.7") == v"1.7.0-rc3" # Depends on what the latest 1.7 release is
     @test_skip UpdateJulia.version_of("julia-1.5") == v"1.5.1" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
 end
+
+println(ENV["PATH"])
+if Sys.iswindows()
+    for systemwide in (true,false) 
+        println(strip(open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)))
+    end
+end
