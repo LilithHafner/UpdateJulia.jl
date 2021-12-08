@@ -49,14 +49,17 @@ search: update_julia
 
   Behavior flags
 
-    •  set_default = (v == latest()) make 'julia' point to installed version.
-
     •  dry_run = false skip the actual download and instillation
 
     •  verbose = dry_run print the final value of all arguments
 
   Destination
-
+  
+    •  aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"] which aliases to
+       attempt to create for the installed version of Julia. Regardless, will not
+       replace stable versions with less stable versions or newer versions with older
+       versions of the same stability.
+       
     •  systemwide = ... install for all users, false only installs for current user.
 
     •  install_location = systemwide ? "..." : "..." directory
