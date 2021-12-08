@@ -56,11 +56,11 @@ end
 
 @testset "Preserve old versions" begin
     @test UpdateJulia.version_of("julia") == UpdateJulia.latest()
-    @test UpdateJulia.version_of("julia-1.0") == v10_latest
 
     @static if Sys.iswindows()
-        @test_skip "interactive windows installer & path management"
+        @test_skip "interactive windows installer"
     else
+        @test UpdateJulia.version_of("julia-1.0") == v10_latest
         @test UpdateJulia.version_of("julia-1.4") == v"1.4.2"
         @test UpdateJulia.version_of("julia-1.2") == v"1.2.0"
         @test UpdateJulia.version_of("julia-1.0.4") == v"1.0.4"
