@@ -292,7 +292,7 @@ function ensure_on_path(bin, systemwide, v)
         path = open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)
         new_path = instert_path(path, bin, v)
         if path != new_path
-            run(`powershell.exe -nologo -noprofile -command "[Environment]::SetEnvironmentVariable(\"PATH\", $new_path$(systemwide ? "" : ", \"User\"")); }"`)
+            run(`powershell.exe -nologo -noprofile -command "[Environment]::SetEnvironmentVariable(\"PATH\", \"$new_path\"$(systemwide ? "" : ", \"User\"")); }"`)
             println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
         end
 
