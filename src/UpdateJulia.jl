@@ -40,8 +40,10 @@ Not part of the public API.
 function prefer(v1::Union{VersionNumber, Missing}, v2::Union{VersionNumber, Missing})
     ismissing(v1) && return false
     ismissing(v2) && return true
-    stable(v1) && !stable(v2) && return true
     !stable(v1) && stable(v2) && return false
+    stable(v1) && !stable(v2) && return true
+    v1.prerelease == ("DEV",) && v2.prerelease != ("DEV",) && return false
+    v1.prerelease != ("DEV",) && v2.prerelease == ("DEV",) && return true
     return v1 > v2
 end
 stable(v::VersionNumber) = isempty(v.prerelease)
