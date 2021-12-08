@@ -30,12 +30,29 @@ function fetch()
     nothing
 end
 
+"""
+    prefer(v1, v2)
+
+Whether to prefer v1 over v2.
+
+Not part of the public API.
+"""
+function prefer(v1::Union{VersionNumber, Missing}, v2::Union{VersionNumber, Missing})
+    ismissing(v1) && return false
+    ismissing(v2) && return true
+    !is_stable(v1) && is_stable(v2) && return false
+    is_stable(v1) && !is_stable(v2) && return true
+    is_nightly(v1) && !is_nightly(v2) && return false
+    !is_nightly(v1) && is_nightly(v2) && return true
+    return v1 > v2
+end
+is_stable(v::VersionNumber) = isempty(v.prerelease)
+is_nightly(v::VersionNumber) = v.prerelease == ("DEV",)
+
 function latest(prefix="")
     kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
     isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
-    sort!(kys)
-    sort!(kys, by=x->isempty(x.prerelease))
-    last(kys)
+    partialsort!(kys, 1, lt=prefer)
 end
 
 ## Keyword argument helpers ##
@@ -113,12 +130,12 @@ If `version == "nightly"`, then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
 Behavior flags
-$(Sys.iswindows() ? "" : "- `set_default = (v == latest())` make 'julia' point to installed version.")
-$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
 - `dry_run = false` skip the actual download and instillation
 - `verbose = dry_run` print the final value of all arguments
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
 
 Destination
+- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
 - `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
@@ -138,7 +155,7 @@ function update_julia(version::AbstractString="";
     _v_url = ((fetch && UpdateJulia.fetch()); v_url(version, os_str, arch, prefer_gui)),
     v = first(_v_url),
     url = last(_v_url),
-    set_default = (@static Sys.iswindows() ? false : v==latest()),
+    aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"],
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
     install_location = default_install_location(systemwide, v),
     bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
@@ -146,7 +163,6 @@ function update_julia(version::AbstractString="";
     verbose = dry_run)
 
     @static VERSION >= v"1.1" && verbose && display(Base.@locals)
-    @static Sys.iswindows() && set_default && (println("set_default=true not supported for windows"); set_default=false)
     @static Sys.iswindows() && bin !== nothing && (println("bin not supported for windows"); bin=nothing)
 
     prereport(v) #TODO should this report more info?
@@ -195,17 +211,14 @@ function update_julia(version::AbstractString="";
     end
 
     isdir(bin) || (println("Making path to $bin"); mkpath(bin))
-    ensure_on_path(bin, systemwide)
+    ensure_on_path(bin, systemwide, v)
 
-    commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
-    set_default && push!(commands, "julia")
-
-    for command in commands
-        link(executable, bin, command * (@os ".exe" ""), set_default, systemwide, v)
+    for command in aliases
+        link(executable, bin, command * (@os ".exe" ""), systemwide, v)
     end
 
-    union!(commands, ["julia"])
-    report(commands, v)
+    #Try these standard commands to see if they work, even if we didn't create them just now
+    report(union(aliases, ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"]), v)
 
     v
 end
@@ -277,16 +290,18 @@ function extract(install_location, download_file, v)
 end
 
 ## Link ##
-function ensure_on_path(bin, systemwide)
+function ensure_on_path(bin, systemwide, v)
     @static if Sys.iswindows()
         # Long term solution
-        if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
-            run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\"")); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\"$(systemwide ? "" : ", \"User\"")); }"`)
+        path = strip(open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`))
+        new_path = insert_path(path, bin, v)
+        if path != new_path
+            run(`powershell.exe -nologo -noprofile -command "[Environment]::SetEnvironmentVariable(\"PATH\", \"$new_path\"$(systemwide ? "" : ", \"User\""))"`)
             println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
         end
 
         # Short term solution
-        occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin")
+        ENV["PATH"] = insert_path(ENV["PATH"], bin, v)
     else
         # Long term solution
         if !occursin(bin, ENV["PATH"])
@@ -298,40 +313,89 @@ function ensure_on_path(bin, systemwide)
     end
 end
 
-function link(executable, bin, command, set_default, systemwide, v)
-    link = joinpath(bin, command)
-    symlink_replace(executable, link)
+"""
+    insert_path(path, entry, v)
 
-    if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
-        link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
-        if !systemwide && !startswith(link, homedir())
-            printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
-        else
-            printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
-            symlink_replace(executable, link)
+Insert path entry after valid & prefered julia but before unknown & unprefered julia
+
+Instert entry into path following these guidelines
+- after versions `prefer`red over `v`
+- before versions `v` is `prefer`red over (inluding unknown versions)
+- skip operation if `entry` already meets above guidelines
+- before existing entries for `v`
+- as late as possible
+
+Not part of the public API
+"""
+function insert_path(path, entry, v)
+    @assert Sys.iswindows()
+    entries = split(path, ";")
+    keys = map(entries) do entry
+        l = skipmissing(try VersionNumber(m[2]) catch; missing end
+            for m in eachmatch(r"julias?(-|\\)([0-9.a-zA-Z\-+]*)\\\\", entry))
+        (isempty(l) ? missing : maximum(l), occursin("julia", lowercase(entry)))
+    end
+
+    # after versions `prefer`red over `v`
+    last_better = findlast(k->prefer(k[1], v), keys)
+    last_better === nothing && (last_better = 0)
+
+    # before versions `v` is `prefer`red over (inluding unknown versions) & before existing entries for `v`
+    first_worse_or_eq = findfirst(k -> k[2] && !prefer(k[1], v), keys[last_better+1:end])
+    first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
+    first_worse_or_eq += last_better
+
+    # skip operation if `entry` already meets above guidelines
+    entry ∈ entries[last_better+1:min(end, first_worse_or_eq)] && return path
+
+    join(insert!(entries, first_worse_or_eq, entry), ";")
+end
+
+function link(executable, bin, command, systemwide, v)
+    link = joinpath(bin, command)
+    @static if Sys.iswindows()
+        # Make a hard link from julia.exe to julia-1.6.4.exe within the same directory
+        # because that hardlink won't work accross directories and a symlink requires
+        # priviledges
+        isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $executable`)
+    else
+        # Make a link from the executable in the install location to a bin shared with other julia versions
+        old = version_of(command)
+        if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
+            run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
+
+            old = version_of(command)
+            if prefer(v, old) # A worse symlink has higher precidence
+
+                link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
+                if !systemwide && !startswith(link, homedir())
+                    printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
+                else
+                    printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
+                    run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
+                end
+
+            end
         end
     end
 end
 
-function symlink_replace(target, link)
-    # Because force is not available via Base.symlink
-    @static if Sys.iswindows()
-        #Technically this isn't a replacement at all...
-        isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
-    else
-        run(`ln -sf $target $link`)
-    end
-end
-
 ## Test ##
-function report(commands, version)
-    successes = filter(c->test(c, version), commands)
+function report(commands, v)
+    successes = filter(c->version_of(c)==v, commands)
     @assert !isempty(successes)
-    printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $version\n", color=:green)
+    printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $v\n", color=:green)
 end
 
-function test(command, version)
-    open(f->read(f, String), `$command -v`) == "julia version $version\n"
+function version_of(command)
+    try
+        str = open(f->read(f, String), `$command -v`)
+        @assert startswith(str, "julia version ")
+        @assert endswith(str, "\n")
+        VersionNumber(str[15:end-1])
+    catch x
+        missing
+    end
 end
 
 end

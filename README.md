@@ -49,14 +49,17 @@ search: update_julia
 
   Behavior flags
 
-    •  set_default = (v == latest()) make 'julia' point to installed version.
-
     •  dry_run = false skip the actual download and instillation
 
     •  verbose = dry_run print the final value of all arguments
 
   Destination
-
+  
+    •  aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"] which aliases to
+       attempt to create for the installed version of Julia. Regardless, will not
+       replace stable versions with less stable versions or newer versions with older
+       versions of the same stability.
+       
     •  systemwide = ... install for all users, false only installs for current user.
 
     •  install_location = systemwide ? "..." : "..." directory
@@ -94,4 +97,4 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 
 ## Known issues (contributions welcome!)
 - Does not automatically migrate `Project.toml` and run `Pkg.update()`.
-- Management of multiple versions on Windows is annoying. As with other opperating systems, UpdateJulia will install new versions which can be reached via the commands `julia`, `julia-major.minor` (e.g. `julia-1.6`) or `julia-major.minor.patch` (e.g. `julia-1.6.4`), but because we append to the path variable, older installations will take precedence where there are name conflicts. You can manually edit your path variables by pressing windows+r enterting `rundll32 sysdm.cpl,EditEnvironmentVariables`, and pressing ok.
+- Management of multiple versions on Windows is annoying. We have to parse your PATH and make some guesses. Hopefully this will work in most cases, but it could certianly fail on edge cases (e.g. if your path includes directories with `;` in their names, or already has multiple versions of julia on it in an unexpected order or in unexpected locations). If you run into such an edge case, please report them on this repository! You can also manually edit your path variables by pressing windows+r enterting `rundll32 sysdm.cpl,EditEnvironmentVariables`, and pressing ok.
