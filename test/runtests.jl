@@ -74,7 +74,7 @@ end
     @test UpdateJulia.version_of("julia-1.7.0-rc1") == v"1.7.0-rc1"
     @test UpdateJulia.version_of("julia-1.7.0-rc3") == v"1.7.0-rc3"
     @test_skip update_julia("1.5") >= v"1.5.3" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
-    @test update_julia("1.7") >= v"julia-1.7.0-rc3"
+    @test update_julia("1.7") >= v"1.7.0-rc3"
     @test UpdateJulia.version_of("julia") == v_latest
 end
 
