@@ -60,11 +60,11 @@ end
     @static if Sys.iswindows()
         @test_skip "interactive windows installer"
     else
-        @test UpdateJulia.version_of("julia-1.0") == v10_latest
         @test UpdateJulia.version_of("julia-1.4") == v"1.4.2"
         @test UpdateJulia.version_of("julia-1.2") == v"1.2.0"
         @test UpdateJulia.version_of("julia-1.0.4") == v"1.0.4"
         @test UpdateJulia.version_of("julia-1.0.0") == v"1.0.0"
+        @test UpdateJulia.version_of("julia-1.0") == v10_latest
     end
     
     @test UpdateJulia.version_of("julia-1.5.1") == v"1.5.1"
