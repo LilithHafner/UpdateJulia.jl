@@ -324,14 +324,8 @@ Not part of the public API
 function instert_path(path, entry, v)
     @assert Sys.iswindows()
     entries = split(path, ";")
-    println(entries)
-    #=keyss = map.(filter.(x->startswith("julia-"), splitpath.(entries))) do name
-        try
-            VersionNumber(name[7:end])
-        catch
-            missing
-        end
-    end=#
+    keyss = map.(name -> try VersionNumber(name[7:end]) catch; missing end,
+        filter.(x->startswith("julia-"), splitpath.(entries)))
     println(keyss)
     keys = map(sort!.(keyss, lt=prefer)) do list
         isempty(list) ? missing : first(list)
@@ -364,11 +358,11 @@ function link(executable, bin, command, systemwide, v)
     else
         # Make a link from the executable in the install location to a bin shared with other julia versions
         link = joinpath(bin, command)
-        old = version(command)
+        old = version_of(command)
         if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
             run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
 
-            old = version(command)
+            old = version_of(command)
             if prefer(v, old) # A worse symlink has higher precidence
 
                 link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
@@ -385,13 +379,13 @@ function link(executable, bin, command, systemwide, v)
 end
 
 ## Test ##
-function report(commands, version)
-    successes = filter(c->version(c)==version, commands)
+function report(commands, v)
+    successes = filter(c->version_of(c)==v, commands)
     @assert !isempty(successes)
-    printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $version\n", color=:green)
+    printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $v\n", color=:green)
 end
 
-function version(command)
+function version_of(command)
     try
         str = open(f->read(f, String), `$command -v`)
         @assert startswith(str, "julia version ")
