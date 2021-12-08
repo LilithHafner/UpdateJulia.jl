@@ -33,11 +33,12 @@ end
         @test update_julia("1.4") == v"1.4.2" # TODO check that this reports succeeds on all three counts
         @test update_julia("1.2") == v"1.2.0"
         @test update_julia("1.0.4") == v"1.0.4"
-        @test update_julia("1.0.0") == v"1.0.0"
         global v10_latest = update_julia("1.0")
         @test v10_latest >= v"1.0.5" && v10_latest < v"1.1.0"
+        @test update_julia("1.0.0") == v"1.0.0"
     end
 
+    Sys.iswindows() || println("requesting GUI")
     @test update_julia("1.5.2", prefer_gui = !Sys.iswindows()) == v"1.5.2" # not supported. test fallback.
     @test update_julia("1.5.3", systemwide=true, verbose=true) == v"1.5.3" # TODO check that this reports succeeds on all three counts
     @test update_julia("1.5.1", systemwide=false) == v"1.5.1"
@@ -72,12 +73,9 @@ end
     @test UpdateJulia.version_of("julia-1.5.3") == v"1.5.3"
     @test UpdateJulia.version_of("julia-1.7.0-rc1") == v"1.7.0-rc1"
     @test UpdateJulia.version_of("julia-1.7.0-rc3") == v"1.7.0-rc3"
-    @test update_julia("1.5") >= v"1.5.3"
+    @test_skip update_julia("1.5") >= v"1.5.3" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
     @test update_julia("1.7") >= v"julia-1.7.0-rc3"
     @test UpdateJulia.version_of("julia") == v_latest
-
-    @test_skip UpdateJulia.version_of("julia-1.7") == v"1.7.0-rc3" # Depends on what the latest 1.7 release is
-    @test_skip UpdateJulia.version_of("julia-1.5") == v"1.5.1" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
 end
 
 println(ENV["PATH"])
