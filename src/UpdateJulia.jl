@@ -344,7 +344,7 @@ function insert_path(path, entry, v)
     println(last_better)
 
     # before versions `v` is `prefer`red over & before existing entries for `v`
-    first_worse_or_eq = findfirst(k->!prefer(k, v), keys[last_better+1:end])
+    first_worse_or_eq = findfirst(k -> !ismissing(k) && !prefer(k, v), keys[last_better+1:end])
     first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
     first_worse_or_eq += last_better
     println(first_worse_or_eq)
