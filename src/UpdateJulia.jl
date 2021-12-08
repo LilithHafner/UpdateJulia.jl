@@ -127,22 +127,30 @@ If `version == "nightly"`, then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
 Behavior flags
-- `set_default = (v == latest())` make 'julia' point to installed version.
 - `dry_run = false` skip the actual download and instillation
 - `verbose = dry_run` print the final value of all arguments
-$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" \
+version rather than downloading the \"archive\" version and letting UpdateJulia \
+automatically install it" : "")
 
 Destination
-- `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
+- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to \
+attempt to create for the installed version of Julia. Regardless, will not replace stable versions \
+with unstable versions or newer versions with older versions of the same stability.
+- `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, \
+`false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
 
 Source
-- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
-- `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the \
+operating system: "linux", "mac", "winnt", or "freebsd".
+- `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: \
+"x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
 
 - `v = ...` the `VersionNumber` to install
-- `url = ...` URL to download that version from, if you explicitly set `url`, also explicitly set `v` lest they differ
+- `url = ...` URL to download that version from, if you explicitly set `url`, also \
+explicitly set `v` lest they differ
 """
 function update_julia(version::AbstractString="";
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
@@ -152,7 +160,7 @@ function update_julia(version::AbstractString="";
     _v_url = ((fetch && UpdateJulia.fetch()); v_url(version, os_str, arch, prefer_gui)),
     v = first(_v_url),
     url = last(_v_url),
-    set_default = (v == latest()),
+    aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"],
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
     install_location = default_install_location(systemwide, v),
     bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
@@ -210,15 +218,11 @@ function update_julia(version::AbstractString="";
     isdir(bin) || (println("Making path to $bin"); mkpath(bin))
     ensure_on_path(bin, systemwide, v)
 
-    commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
-    set_default && push!(commands, "julia")
-
-    for command in commands
+    for command in aliases
         link(executable, bin, command * (@os ".exe" ""), systemwide, v)
     end
 
-    union!(commands, ["julia"])
-    report(commands, v)
+    report(union(aliases, ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"]), v)
 
     v
 end
@@ -290,7 +294,7 @@ function extract(install_location, download_file, v)
 end
 
 ## Link ##
-function ensure_on_path(bin, systemwide, v, v)
+function ensure_on_path(bin, systemwide, v)
     @static if Sys.iswindows()
         # Long term solution
         path = open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)
@@ -329,13 +333,13 @@ function instert_path(path, entry, v)
     @assert Sys.iswindows()
     entries = split(path, ";")
     println(entries)
-    keyss = map.(filter.(x->startswith("julia-"), splitpath.(entries))) do name
+    #=keyss = map.(filter.(x->startswith("julia-"), splitpath.(entries))) do name
         try
             VersionNumber(name[7:end])
         catch
             missing
         end
-    end
+    end=#
     println(keyss)
     keys = map(sort!.(keyss, lt=prefer)) do list
         isempty(list) ? missing : first(list)
@@ -344,12 +348,12 @@ function instert_path(path, entry, v)
 
     # after versions `prefer`red over `v`
     last_better = findlast(k->prefer(k, v), keys)
-    last_better === nothing && last_better = 0
+    last_better === nothing && (last_better = 0)
     println(last_better)
 
     # before versions `v` is `prefer`red over & before existing entries for `v`
     first_worse_or_eq = findfirst(k->!prefer(k, v), keys[last_better+1:end])
-    first_worse_or_eq === nothing && first_worse_or_eq = lastindex(entries)+1-last_better
+    first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
     first_worse_or_eq += last_better
     println(fist_worse_or_eq)
 
