@@ -326,11 +326,10 @@ function instert_path(path, entry, v)
     println(path)
     entries = split(path, ";")
     println(entries)
-    keyss = map.(name -> try VersionNumber(name[7:end]) catch; missing end,
-        filter.(x->startswith("julia-", x), splitpath.(entries)))
-    println(keyss)
-    keys = map(sort!.(keyss, lt=prefer)) do list
-        isempty(list) ? missing : first(list)
+    keys = map(entries) do entry
+        l = skipmissing(try VersionNumber(m[2]) catch; missing end
+            for m in eachmatch(r"julia(-|\\)([0-9.a-zA-Z\-+]*)\\\\", entry))
+        isempty(l) ? missing : maximum(l)
     end
     println(keys)
 
