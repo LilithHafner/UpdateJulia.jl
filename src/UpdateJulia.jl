@@ -40,18 +40,19 @@ Not part of the public API.
 function prefer(v1::Union{VersionNumber, Missing}, v2::Union{VersionNumber, Missing})
     ismissing(v1) && return false
     ismissing(v2) && return true
-    !stable(v1) && stable(v2) && return false
-    stable(v1) && !stable(v2) && return true
-    v1.prerelease == ("DEV",) && v2.prerelease != ("DEV",) && return false
-    v1.prerelease != ("DEV",) && v2.prerelease == ("DEV",) && return true
+    !is_stable(v1) && is_stable(v2) && return false
+    is_stable(v1) && !is_stable(v2) && return true
+    is_nightly(v1) && !is_nightly(v2) && return false
+    !is_nightly(v1) && is_nightly(v2) && return true
     return v1 > v2
 end
-stable(v::VersionNumber) = isempty(v.prerelease)
+is_stable(v::VersionNumber) = isempty(v.prerelease)
+is_nightly(v::VersionNumber) = v.prerelease == ("DEV",)
 
 function latest(prefix="")
     kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
     isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
-    first(sort!(kys, lt=prefer))
+    partialsort!(kys, 1, lt=prefer)
 end
 
 ## Keyword argument helpers ##
@@ -134,7 +135,7 @@ Behavior flags
 $(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
 
 Destination
-- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with unstable versions or newer versions with older versions of the same stability.
+- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
 - `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
@@ -216,6 +217,7 @@ function update_julia(version::AbstractString="";
         link(executable, bin, command * (@os ".exe" ""), systemwide, v)
     end
 
+    #Try these standard commands to see if they work, even if we didn't create them just now
     report(union(aliases, ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"]), v)
 
     v
