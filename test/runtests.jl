@@ -55,27 +55,26 @@ end
 end
 
 @testset "Preserve old versions" begin
+    @test UpdateJulia.version_of("julia") == UpdateJulia.latest()
+    @test UpdateJulia.version_of("julia-1.0") == v10_latest
+
     @static if Sys.iswindows()
         @test_skip "interactive windows installer & path management"
     else
-        @test UpdateJulia.version_of("julia") == UpdateJulia.latest()
         @test UpdateJulia.version_of("julia-1.4") == v"1.4.2"
         @test UpdateJulia.version_of("julia-1.2") == v"1.2.0"
         @test UpdateJulia.version_of("julia-1.0.4") == v"1.0.4"
         @test UpdateJulia.version_of("julia-1.0.0") == v"1.0.0"
-        @test UpdateJulia.version_of("julia-1.0") == v10_latest
     end
+    
     @test UpdateJulia.version_of("julia-1.5.1") == v"1.5.1"
     @test UpdateJulia.version_of("julia-1.5.2") == v"1.5.2"
     @test UpdateJulia.version_of("julia-1.5.3") == v"1.5.3"
     @test UpdateJulia.version_of("julia-1.7.0-rc1") == v"1.7.0-rc1"
     @test UpdateJulia.version_of("julia-1.7.0-rc3") == v"1.7.0-rc3"
-    @static if Sys.iswindows()
-        @test_skip "path management"
-    else
-        @test_skip UpdateJulia.version_of("julia-1.7") == v"1.7.0-rc3" # Depends on what the latest 1.7 release is
-        @test_skip UpdateJulia.version_of("julia-1.5") == v"1.5.1" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
-        @test update_julia("1.5") >= v"1.5.3"
-        @test UpdateJulia.version_of("julia") == v_latest
-    end
+    @test update_julia("1.5") >= v"1.5.3"
+    @test UpdateJulia.version_of("julia") == v_latest
+
+    @test_skip UpdateJulia.version_of("julia-1.7") == v"1.7.0-rc3" # Depends on what the latest 1.7 release is
+    @test_skip UpdateJulia.version_of("julia-1.5") == v"1.5.1" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
 end
