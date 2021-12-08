@@ -293,9 +293,6 @@ function ensure_on_path(bin, systemwide, v)
         # Long term solution
         path = strip(open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`))
         new_path = insert_path(path, bin, v)
-        println(path)
-        println("=>")
-        println(new_path)
         if path != new_path
             run(`powershell.exe -nologo -noprofile -command "[Environment]::SetEnvironmentVariable(\"PATH\", \"$new_path\"$(systemwide ? "" : ", \"User\""))"`)
             println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
@@ -329,29 +326,22 @@ Instert entry into path following these guidelines
 Not part of the public API
 """
 function insert_path(path, entry, v)
-    println("entry: ", entry)
-    display(entry)
     @assert Sys.iswindows()
-    println(path)
     entries = split(path, ";")
-    println(entries)
     keys = map(entries) do entry
         l = skipmissing(try VersionNumber(m[2]) catch; missing end
             for m in eachmatch(r"julias?(-|\\)([0-9.a-zA-Z\-+]*)\\\\", entry))
         (isempty(l) ? missing : maximum(l), occursin("julia", lowercase(entry)))
     end
-    println(keys)
 
     # after versions `prefer`red over `v`
     last_better = findlast(k->prefer(k[1], v), keys)
     last_better === nothing && (last_better = 0)
-    println(last_better)
 
     # before versions `v` is `prefer`red over (inluding unknown versions) & before existing entries for `v`
     first_worse_or_eq = findfirst(k -> k[2] && !prefer(k[1], v), keys[last_better+1:end])
     first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
     first_worse_or_eq += last_better
-    println(first_worse_or_eq)
 
     # skip operation if `entry` already meets above guidelines
     entry ∈ entries[last_better+1:min(end, first_worse_or_eq)] && return path
