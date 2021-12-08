@@ -361,7 +361,7 @@ function link(executable, bin, command, systemwide, v)
         # Make a hard link from julia.exe to julia-1.6.4.exe within the same directory
         # because that hardlink won't work accross directories and a symlink requires
         # priviledges
-        isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
+        isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $executable`)
     else
         # Make a link from the executable in the install location to a bin shared with other julia versions
         old = version_of(command)
