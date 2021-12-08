@@ -67,20 +67,21 @@ end
         @test UpdateJulia.version_of("julia-1.0.0") == v"1.0.0"
         @test UpdateJulia.version_of("julia-1.0") == v10_latest
     end
-    
+
     @test UpdateJulia.version_of("julia-1.5.1") == v"1.5.1"
     @test UpdateJulia.version_of("julia-1.5.2") == v"1.5.2"
     @test UpdateJulia.version_of("julia-1.5.3") == v"1.5.3"
     @test UpdateJulia.version_of("julia-1.7.0-rc1") == v"1.7.0-rc1"
     @test UpdateJulia.version_of("julia-1.7.0-rc3") == v"1.7.0-rc3"
-    @test_skip update_julia("1.5") >= v"1.5.3" # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
-    @test update_julia("1.7") >= v"1.7.0-rc3"
+    @test UpdateJulia.version_of("1.5") ∈ [v"1.5.1", v"1.5.3"] # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
+    @test update_julia("1.5", systemwide=false) >= v"1.5.3" # whatever the case, clean up when done
+    @test UpdateJulia.version_of("1.7") >= v"1.7.0-rc3"
     @test UpdateJulia.version_of("julia") == v_latest
 end
 
 println(ENV["PATH"])
 if Sys.iswindows()
-    for systemwide in (true,false) 
+    for systemwide in (true,false)
         println(strip(open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)))
     end
 end
