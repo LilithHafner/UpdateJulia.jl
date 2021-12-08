@@ -290,14 +290,16 @@ function ensure_on_path(bin, systemwide, v)
     @static if Sys.iswindows()
         # Long term solution
         path = open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)
-        new_path = instert_path(path, bin, v)
+        new_path = insert_path(path, bin, v)
+        println(new_path[end-20:end])
+        display(new_path[end-20:end])
         if path != new_path
             run(`powershell.exe -nologo -noprofile -command "[Environment]::SetEnvironmentVariable(\"PATH\", \"$new_path\"$(systemwide ? "" : ", \"User\"")); }"`)
             println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
         end
 
         # Short term solution
-        ENV["PATH"] = instert_path(ENV["PATH"], bin, v)
+        ENV["PATH"] = insert_path(ENV["PATH"], bin, v)
     else
         # Long term solution
         if !occursin(bin, ENV["PATH"])
@@ -310,7 +312,7 @@ function ensure_on_path(bin, systemwide, v)
 end
 
 """
-    instert_path(path, entry, v)
+    insert_path(path, entry, v)
 
 Instert entry into path following these guidelines
 - after versions `prefer`red over `v`
@@ -321,7 +323,9 @@ Instert entry into path following these guidelines
 
 Not part of the public API
 """
-function instert_path(path, entry, v)
+function insert_path(path, entry, v)
+    println("entry: ", entry)
+    display(entry)
     @assert Sys.iswindows()
     println(path)
     entries = split(path, ";")
