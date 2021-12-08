@@ -317,7 +317,7 @@ end
 
 Instert entry into path following these guidelines
 - after versions `prefer`red over `v`
-- before versions `v` is `prefer`red over
+- before versions `v` is `prefer`red over (inluding unknown versions)
 - skip operation if `entry` already meets above guidelines
 - before existing entries for `v`
 - as late as possible
@@ -334,17 +334,18 @@ function insert_path(path, entry, v)
     keys = map(entries) do entry
         l = skipmissing(try VersionNumber(m[2]) catch; missing end
             for m in eachmatch(r"julia(-|\\)([0-9.a-zA-Z\-+]*)\\\\", entry))
-        isempty(l) ? missing : maximum(l)
+        (isempty(l) ? missing : maximum(l), occursin("julia", lowercase(entry)))
     end
     println(keys)
+    #TODO after valid & prefered julia but before unknown & unprefered julia
 
     # after versions `prefer`red over `v`
-    last_better = findlast(k->prefer(k, v), keys)
+    last_better = findlast(k->prefer(k[1], v), keys)
     last_better === nothing && (last_better = 0)
     println(last_better)
 
-    # before versions `v` is `prefer`red over & before existing entries for `v`
-    first_worse_or_eq = findfirst(k -> !ismissing(k) && !prefer(k, v), keys[last_better+1:end])
+    # before versions `v` is `prefer`red over (inluding unknown versions) & before existing entries for `v`
+    first_worse_or_eq = findfirst(k[2] && !prefer(k[1], v), keys[last_better+1:end])
     first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
     first_worse_or_eq += last_better
     println(first_worse_or_eq)
