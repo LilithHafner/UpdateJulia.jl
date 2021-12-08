@@ -56,6 +56,7 @@ end
 end
 
 @testset "Preserve old versions" begin
+    @test ismissing(UpdateJulia.version_of("this-should-not-be-a-valid-command-gj493fD62l4"))
     @test UpdateJulia.version_of("julia") == UpdateJulia.latest()
 
     @static if Sys.iswindows()
@@ -73,9 +74,9 @@ end
     @test UpdateJulia.version_of("julia-1.5.3") == v"1.5.3"
     @test UpdateJulia.version_of("julia-1.7.0-rc1") == v"1.7.0-rc1"
     @test UpdateJulia.version_of("julia-1.7.0-rc3") == v"1.7.0-rc3"
-    @test UpdateJulia.version_of("1.5") ∈ [v"1.5.1", v"1.5.3"] # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
+    @test UpdateJulia.version_of("julia-1.5") ∈ [v"1.5.1", v"1.5.3"] # Could be 1.5.1 or 1.5.3 depending on path order b.c. of coexisting systemwide and user installations
     @test update_julia("1.5", systemwide=false) >= v"1.5.3" # whatever the case, clean up when done
-    @test UpdateJulia.version_of("1.7") >= v"1.7.0-rc3"
+    @test UpdateJulia.version_of("julia-1.7") >= v"1.7.0-rc3"
     @test UpdateJulia.version_of("julia") == v_latest
 end
 
