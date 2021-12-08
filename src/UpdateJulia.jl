@@ -337,7 +337,6 @@ function insert_path(path, entry, v)
         (isempty(l) ? missing : maximum(l), occursin("julia", lowercase(entry)))
     end
     println(keys)
-    #TODO after valid & prefered julia but before unknown & unprefered julia
 
     # after versions `prefer`red over `v`
     last_better = findlast(k->prefer(k[1], v), keys)
