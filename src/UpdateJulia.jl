@@ -129,28 +129,20 @@ If `version == "nightly"`, then installs the bleeding-edge nightly version.
 Behavior flags
 - `dry_run = false` skip the actual download and instillation
 - `verbose = dry_run` print the final value of all arguments
-$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" \
-version rather than downloading the \"archive\" version and letting UpdateJulia \
-automatically install it" : "")
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
 
 Destination
-- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to \
-attempt to create for the installed version of Julia. Regardless, will not replace stable versions \
-with unstable versions or newer versions with older versions of the same stability.
-- `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, \
-`false` only installs for current user.
+- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with unstable versions or newer versions with older versions of the same stability.
+- `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
 
 Source
-- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the \
-operating system: "linux", "mac", "winnt", or "freebsd".
-- `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: \
-"x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
+- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
+- `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
 
 - `v = ...` the `VersionNumber` to install
-- `url = ...` URL to download that version from, if you explicitly set `url`, also \
-explicitly set `v` lest they differ
+- `url = ...` URL to download that version from, if you explicitly set `url`, also explicitly set `v` lest they differ
 """
 function update_julia(version::AbstractString="";
     os_str = (@os "winnt" "mac" "freebsd" "linux"),
