@@ -356,6 +356,7 @@ function insert_path(path, entry, v)
 end
 
 function link(executable, bin, command, systemwide, v)
+    link = joinpath(bin, command)
     @static if Sys.iswindows()
         # Make a hard link from julia.exe to julia-1.6.4.exe within the same directory
         # because that hardlink won't work accross directories and a symlink requires
@@ -363,7 +364,6 @@ function link(executable, bin, command, systemwide, v)
         isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
         # Make a link from the executable in the install location to a bin shared with other julia versions
-        link = joinpath(bin, command)
         old = version_of(command)
         if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
             run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
