@@ -45,12 +45,11 @@ end
     @elapsed @test update_julia("1.7.0-rc1", dry_run = true) == v"1.7.0-rc1"
     @test .1 > @elapsed @test update_julia("1.7.0-rc1", dry_run = true) == v"1.7.0-rc1"
     @test update_julia("1.7.0-rc1", dry_run = true, verbose = false) == v"1.7.0-rc1"
-    @test update_julia("1.7.0-rc1") == v"1.7.0-rc1"
     t_before_force_fetch = UpdateJulia.last_fetched[]
     @test update_julia("1.7.0-rc3", fetch = true) == v"1.7.0-rc3"
     t_after_force_fetch = UpdateJulia.last_fetched[]
     @test 0 < t_before_force_fetch < t_after_force_fetch < time()
-    @test update_julia() == v_latest
+    @test update_julia("1.7.0-rc1") == v"1.7.0-rc1"
     global v_nightly = update_julia("nightly")
     @test v_nightly >= v"1.8-DEV" && v_nightly > v_latest && v_nightly.prerelease == ("DEV",)
 end
