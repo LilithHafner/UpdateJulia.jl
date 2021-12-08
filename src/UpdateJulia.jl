@@ -323,7 +323,9 @@ Not part of the public API
 """
 function instert_path(path, entry, v)
     @assert Sys.iswindows()
+    println(path)
     entries = split(path, ";")
+    println(entries)
     keyss = map.(name -> try VersionNumber(name[7:end]) catch; missing end,
         filter.(x->startswith("julia-", x), splitpath.(entries)))
     println(keyss)
@@ -341,7 +343,7 @@ function instert_path(path, entry, v)
     first_worse_or_eq = findfirst(k->!prefer(k, v), keys[last_better+1:end])
     first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
     first_worse_or_eq += last_better
-    println(fist_worse_or_eq)
+    println(first_worse_or_eq)
 
     # skip operation if `entry` already meets above guidelines
     entry ∈ entries[last_better+1:frist_worse_or_eq] && return path
