@@ -366,7 +366,7 @@ function link(executable, bin, command, systemwide, v)
         link = joinpath(bin, command)
         old = version(command)
         if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
-            run(`ln -sf $target $link`) # Because force is not available via Base.symlink
+            run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
 
             old = version(command)
             if prefer(v, old) # A worse symlink has higher precidence
@@ -376,7 +376,7 @@ function link(executable, bin, command, systemwide, v)
                     printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
                 else
                     printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
-                    run(`ln -sf $target $link`) # Because force is not available via Base.symlink
+                    run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
                 end
 
             end
