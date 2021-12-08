@@ -289,7 +289,7 @@ end
 function ensure_on_path(bin, systemwide, v)
     @static if Sys.iswindows()
         # Long term solution
-        path = open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)
+        path = strip(open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`))
         new_path = insert_path(path, bin, v)
         println(new_path[end-20:end])
         display(new_path[end-20:end])
