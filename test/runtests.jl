@@ -73,6 +73,7 @@ end
     @test UpdateJulia.version_of("julia-1.7.0-rc1") == v"1.7.0-rc1"
     @test UpdateJulia.version_of("julia-1.7.0-rc3") == v"1.7.0-rc3"
     @test update_julia("1.5") >= v"1.5.3"
+    @test update_julia("1.7") >= v"julia-1.7.0-rc3"
     @test UpdateJulia.version_of("julia") == v_latest
 
     @test_skip UpdateJulia.version_of("julia-1.7") == v"1.7.0-rc3" # Depends on what the latest 1.7 release is
