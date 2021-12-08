@@ -325,7 +325,7 @@ function instert_path(path, entry, v)
     @assert Sys.iswindows()
     entries = split(path, ";")
     keyss = map.(name -> try VersionNumber(name[7:end]) catch; missing end,
-        filter.(x->startswith("julia-"), splitpath.(entries)))
+        filter.(x->startswith("julia-", x), splitpath.(entries)))
     println(keyss)
     keys = map(sort!.(keyss, lt=prefer)) do list
         isempty(list) ? missing : first(list)
