@@ -1,6 +1,19 @@
 using UpdateJulia
 using Test
 
+@testset "UpdateJulia.prefer" begin
+    @test UpdateJulia.prefer(v"1.7.0", v"1.3.6")
+    @test !UpdateJulia.prefer(v"1.7.0", v"1.7.0")
+    @test !UpdateJulia.prefer(v"1.7.0-rc1", v"1.6.4")
+    @test !UpdateJulia.prefer(v"17.7.0-rc1", v"1.6.4")
+    @test UpdateJulia.prefer(v"17.7.0-rc1", v"1.6.4-DEV")
+    @test UpdateJulia.prefer(v"17.7.0-rc1", v"2.6.4-DEV")
+
+    @test !UpdateJulia.prefer(missing, v"1.6.4")
+    @test !UpdateJulia.prefer(missing, missing)
+    @test UpdateJulia.prefer(v"1.7.0-rc1", missing)
+end
+
 @testset "UpdateJulia.jl" begin
 
     display(@doc update_julia)

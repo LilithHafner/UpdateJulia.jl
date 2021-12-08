@@ -30,12 +30,26 @@ function fetch()
     nothing
 end
 
+"""
+    prefer(v1, v2)
+
+Whether to prefer v1 over v2.
+
+Not part of the public API.
+"""
+function prefer(v1::Union{VersionNumber, Missing}, v2::Union{VersionNumber, Missing})
+    ismissing(v1) && return false
+    ismissing(v2) && return true
+    stable(v1) && !stable(v2) && return true
+    !stable(v1) && stable(v2) && return false
+    return v1 > v2
+end
+stable(v::VersionNumber) = isempty(v.prerelease)
+
 function latest(prefix="")
     kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
     isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
-    sort!(kys)
-    sort!(kys, by=x->isempty(x.prerelease))
-    last(kys)
+    first(sort!(kys, lt=prefer))
 end
 
 ## Keyword argument helpers ##
@@ -113,10 +127,10 @@ If `version == "nightly"`, then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
 Behavior flags
-$(Sys.iswindows() ? "" : "- `set_default = (v == latest())` make 'julia' point to installed version.")
-$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
+- `set_default = (v == latest())` make 'julia' point to installed version.
 - `dry_run = false` skip the actual download and instillation
 - `verbose = dry_run` print the final value of all arguments
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
 
 Destination
 - `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
@@ -138,7 +152,7 @@ function update_julia(version::AbstractString="";
     _v_url = ((fetch && UpdateJulia.fetch()); v_url(version, os_str, arch, prefer_gui)),
     v = first(_v_url),
     url = last(_v_url),
-    set_default = (@static Sys.iswindows() ? false : v==latest()),
+    set_default = (v == latest()),
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
     install_location = default_install_location(systemwide, v),
     bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
@@ -146,7 +160,6 @@ function update_julia(version::AbstractString="";
     verbose = dry_run)
 
     @static VERSION >= v"1.1" && verbose && display(Base.@locals)
-    @static Sys.iswindows() && set_default && (println("set_default=true not supported for windows"); set_default=false)
     @static Sys.iswindows() && bin !== nothing && (println("bin not supported for windows"); bin=nothing)
 
     prereport(v) #TODO should this report more info?
@@ -195,13 +208,13 @@ function update_julia(version::AbstractString="";
     end
 
     isdir(bin) || (println("Making path to $bin"); mkpath(bin))
-    ensure_on_path(bin, systemwide)
+    ensure_on_path(bin, systemwide, v)
 
     commands = ["julia-$v", "julia-$(v.major).$(v.minor)"]
     set_default && push!(commands, "julia")
 
     for command in commands
-        link(executable, bin, command * (@os ".exe" ""), set_default, systemwide, v)
+        link(executable, bin, command * (@os ".exe" ""), systemwide, v)
     end
 
     union!(commands, ["julia"])
@@ -277,16 +290,18 @@ function extract(install_location, download_file, v)
 end
 
 ## Link ##
-function ensure_on_path(bin, systemwide)
+function ensure_on_path(bin, systemwide, v, v)
     @static if Sys.iswindows()
         # Long term solution
-        if !occursin(bin, open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable('PATH')"`))
-            run(`powershell.exe -nologo -noprofile -command "& { \$PATH = [Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\"")); [Environment]::SetEnvironmentVariable(\"PATH\", \"\${PATH};$bin\"$(systemwide ? "" : ", \"User\"")); }"`)
+        path = open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)
+        new_path = instert_path(path, bin, v)
+        if path != new_path
+            run(`powershell.exe -nologo -noprofile -command "[Environment]::SetEnvironmentVariable(\"PATH\", $new_path$(systemwide ? "" : ", \"User\"")); }"`)
             println("Adding $bin to $(systemwide ? "system" : "user") path. Shell/PowerShell restart may be required.")
         end
 
         # Short term solution
-        occursin(bin, ENV["PATH"]) || (ENV["PATH"] *= ";$bin")
+        ENV["PATH"] = instert_path(ENV["PATH"], bin, v)
     else
         # Long term solution
         if !occursin(bin, ENV["PATH"])
@@ -298,40 +313,97 @@ function ensure_on_path(bin, systemwide)
     end
 end
 
-function link(executable, bin, command, set_default, systemwide, v)
-    link = joinpath(bin, command)
-    symlink_replace(executable, link)
+"""
+    instert_path(path, entry, v)
 
-    if set_default && open(f->read(f, String), `$command -v`) != "julia version $v\n"
-        link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
-        if !systemwide && !startswith(link, homedir())
-            printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
-        else
-            printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
-            symlink_replace(executable, link)
+Instert entry into path following these guidelines
+- after versions `prefer`red over `v`
+- before versions `v` is `prefer`red over
+- skip operation if `entry` already meets above guidelines
+- before existing entries for `v`
+- as late as possible
+
+Not part of the public API
+"""
+function instert_path(path, entry, v)
+    @assert Sys.iswindows()
+    entries = split(path, ";")
+    println(entries)
+    keyss = map.(filter.(x->startswith("julia-"), splitpath.(entries))) do name
+        try
+            VersionNumber(name[7:end])
+        catch
+            missing
         end
     end
+    println(keyss)
+    keys = map(sort!.(keyss, lt=prefer)) do list
+        isempty(list) ? missing : first(list)
+    end
+    println(keys)
+
+    # after versions `prefer`red over `v`
+    last_better = findlast(k->prefer(k, v), keys)
+    last_better === nothing && last_better = 0
+    println(last_better)
+
+    # before versions `v` is `prefer`red over & before existing entries for `v`
+    first_worse_or_eq = findfirst(k->!prefer(k, v), keys[last_better+1:end])
+    first_worse_or_eq === nothing && first_worse_or_eq = lastindex(entries)+1-last_better
+    first_worse_or_eq += last_better
+    println(fist_worse_or_eq)
+
+    # skip operation if `entry` already meets above guidelines
+    entry ∈ entries[last_better+1:frist_worse_or_eq] && return path
+
+    join(insert!(entries, first_worse_or_eq, entry), ";")
 end
 
-function symlink_replace(target, link)
-    # Because force is not available via Base.symlink
+function link(executable, bin, command, systemwide, v)
     @static if Sys.iswindows()
-        #Technically this isn't a replacement at all...
+        # Make a hard link from julia.exe to julia-1.6.4.exe within the same directory
+        # because that hardlink won't work accross directories and a symlink requires
+        # priviledges
         isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $target`)
     else
-        run(`ln -sf $target $link`)
+        # Make a link from the executable in the install location to a bin shared with other julia versions
+        link = joinpath(bin, command)
+        old = version(command)
+        if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
+            run(`ln -sf $target $link`) # Because force is not available via Base.symlink
+
+            old = version(command)
+            if prefer(v, old) # A worse symlink has higher precidence
+
+                link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
+                if !systemwide && !startswith(link, homedir())
+                    printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
+                else
+                    printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
+                    run(`ln -sf $target $link`) # Because force is not available via Base.symlink
+                end
+
+            end
+        end
     end
 end
 
 ## Test ##
 function report(commands, version)
-    successes = filter(c->test(c, version), commands)
+    successes = filter(c->version(c)==version, commands)
     @assert !isempty(successes)
     printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $version\n", color=:green)
 end
 
-function test(command, version)
-    open(f->read(f, String), `$command -v`) == "julia version $version\n"
+function version(command)
+    try
+        str = open(f->read(f, String), `$command -v`)
+        @assert startswith(str, "julia version ")
+        @assert endswith(str, "\n")
+        VersionNumber(str[15:end-1])
+    catch x
+        missing
+    end
 end
 
 end
