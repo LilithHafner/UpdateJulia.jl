@@ -109,7 +109,7 @@ end
                 catch
                     println("Running: $c")
                     println("Gives result: $actual")
-                    println("Installed these compatible versions: $installed")
+                    println("Installed these compatible versions, in this order: $installed")
                     println("Specifically, $i, which is better than $actual")
                     rethrow()
                 end
