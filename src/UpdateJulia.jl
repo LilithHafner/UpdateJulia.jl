@@ -137,7 +137,7 @@ Behavior flags
 $(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
 
 Destination
-- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
+- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$(v.major).\$(v.minor).\$(v.patch)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
 - `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
@@ -157,7 +157,7 @@ function update_julia(version::AbstractString="";
     _v_url = ((fetch && UpdateJulia.fetch()); v_url(version, os_str, arch, prefer_gui)),
     v = first(_v_url),
     url = last(_v_url),
-    aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"],
+    aliases = unique(["julia", "julia-$(v.major).$(v.minor)", "julia-$(v.major).$(v.minor).$(v.patch)", "julia-$v"]),
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
     install_location = default_install_location(systemwide, v),
     bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
