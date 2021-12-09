@@ -106,7 +106,12 @@ end
             for i in installed
                 println(installed)
                 println(join([c, i, actual], ", "))
-                @test !UpdateJulia.prefer(i, actual)
+                try
+                    @test !UpdateJulia.prefer(i, actual)
+                catch
+                    println(i, ", ", actual)
+                    rethrow()
+                end
             end
             if !ismissing(actual) && actual ∉ installed
                 @warn "Unexpectedly found julia version $actual when running `$c -v`. Only installed $installed in testing."
