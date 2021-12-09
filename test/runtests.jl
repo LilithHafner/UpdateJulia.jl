@@ -132,8 +132,8 @@ end
 
     #Dry run
     f() = @test @suppress update_julia("1.7.0-rc1", dry_run=true, verbose=false) == v"1.7.0-rc1"
-    f()
-    @test .05 > f()
+    @elapsed f()
+    @test .05 > @elapsed f()
 
     #Force fetch
     t_before_force_fetch = UpdateJulia.last_fetched[]
