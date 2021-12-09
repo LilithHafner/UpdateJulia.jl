@@ -114,7 +114,13 @@ function v_url(version_str, os_str, arch_str, prefer_gui)
         v == nightly_version[] && return v_url("nightly", os_str, arch_str, prefer_gui)
 
         options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
-        isempty(options) && error("No valid download for \"$version_str\" matching os=\"$os_str\" and arch=\"$arch_str\"")
+        if isempty(options)
+             if startswith(string(nightly_version[]), version_str)
+                 return v_url("nightly", os_str, arch_str, prefer_gui)
+             else
+                 error("No valid download for \"$version_str\" matching os=\"$os_str\" and arch=\"$arch_str\"")
+             end
+        end
         sort!(options, by = x->x["kind"], rev=prefer_gui)
 
         v, first(options)["url"]
