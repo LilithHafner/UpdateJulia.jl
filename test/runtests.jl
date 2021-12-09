@@ -7,7 +7,7 @@ using Random
     t0 = time()
     @test nothing === UpdateJulia.fetch()
     t1 = time()
-    @test 0 < t0 < UpdateJulia.last_fetched[] < t1
+    @test 0 < t0 < UpdateJulia.last_fetched[] <= t1
 end
 
 @testset "docstring" begin
