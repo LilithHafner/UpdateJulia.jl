@@ -104,14 +104,14 @@ end
             installed = filter(x->startswith(string(x), c[7:end]), installed_versions)
             actual = UpdateJulia.version_of(c)
             for i in installed
-                try
-                    @test !UpdateJulia.prefer(i, actual)
-                catch
+                if UpdateJulia.prefer(i, actual)
                     println("Running: $c")
                     println("Gives result: $actual")
                     println("Installed these compatible versions, in this order: $installed")
                     println("Specifically, $i, which is better than $actual")
-                    rethrow()
+                    @test false
+                else
+                    @test true
                 end
             end
             if !ismissing(actual) && actual ∉ installed
