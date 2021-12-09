@@ -70,7 +70,7 @@ end
         # url => untested
         # aliases => untested
         :systemwide => Bool,
-        :install_location => (mktempdir(), mktempdir()),
+        :install_location => [mktempdir(), mktempdir()], # Tuple sampling is missing in julia 1.0
         # bin => untested
         :dry_run => Bool,
         :verbose => Bool]
