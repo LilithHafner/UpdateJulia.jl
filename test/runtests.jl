@@ -41,6 +41,11 @@ end
         v"1.7.0-beta3"] ⊊ keys(UpdateJulia.versions[])
 end
 
+@testset "dry tests" begin
+    @test UpdateJulia.update_julia(string(UpdateJulia.nightly_version[]), dry_run=true) ==
+        UpdateJulia.nightly_version[]
+end
+
 @testset "quick test" begin
     @test update_julia() == UpdateJulia.latest()
     v_nightly = update_julia("nightly")
