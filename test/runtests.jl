@@ -93,9 +93,11 @@ end
 
     commands = unique(vcat("julia", [["julia-$(v.major).$(v.minor)", "julia-$v"]
         for v in vcat(UpdateJulia.nightly_version[], versions)]...))
-    @test String["julia", "julia-1.0", "julia-1.4", "julia-1.8",  "julia-1.3.1",
-        "julia-1.5.1", "julia-1.6.2", "julia-1.3.0-rc3", "julia-1.7.0-rc1",
-        "julia-1.3.0-alpha", "julia-1.7.0-beta2"] ⊊ commands
+    @test String["julia", "julia-1.8", "julia-1.5.1", "julia-1.6.2", "julia-1.5.0-rc2",
+        "julia-1.7.0-rc1", "julia-1.7.0-beta2"] ⊊ commands
+    Sys.iswindows() || @test String["julia-1.0", "julia-1.4",  "julia-1.3.1",
+        "julia-1.3.0-rc3", "julia-1.3.0-alpha"] ⊊ commands
+
 
     @testset "check" begin
         for c in commands
