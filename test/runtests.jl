@@ -33,6 +33,11 @@ end
 @testset "latest()" begin
     @test UpdateJulia.latest() >= v"1.7.0"
     @test UpdateJulia.latest().prerelease == ()
+
+    l = UpdateJulia.latest()
+    for v in keys(UpdateJulia.versions[])
+        @test v === l || UpdateJulia.prefer(l, v)
+    end
 end
 
 @testset "versions" begin
@@ -43,7 +48,9 @@ end
 end
 
 @testset "dry tests" begin
-    @test UpdateJulia.update_julia(string(UpdateJulia.nightly_version[]), dry_run=true) ==
+    @test update_julia(dry_run = true) == UpdateJulia.latest()
+    @suppress_out @test UpdateJulia.update_julia("nightly", dry_run=true, verbose=false) ==
+        UpdateJulia.update_julia(string(UpdateJulia.nightly_version[]), dry_run=true, verbose=false) ==
         UpdateJulia.nightly_version[]
 end
 
