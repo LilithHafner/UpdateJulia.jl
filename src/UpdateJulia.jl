@@ -26,6 +26,7 @@ function fetch()
             nightly_version[] = VersionNumber("$(v.major).$(v.minor+1).0-DEV")
         end
     end
+    versions[][nightly_version[]] = Dict()
     last_fetched[] = time()
     nothing
 end
@@ -110,6 +111,7 @@ function v_url(version_str, os_str, arch_str, prefer_gui)
         nightly_version[], "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
     else
         v = latest(version_str)
+        v == nightly_version[] && return v_url("nightly", os_str, arch_str, prefer_gui)
 
         options = filter(x -> x["os"] == os_str && x["arch"] == arch_str, versions[][v]["files"])
         isempty(options) && error("No valid download for \"$version_str\" matching os=\"$os_str\" and arch=\"$arch_str\"")
