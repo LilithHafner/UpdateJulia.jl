@@ -76,7 +76,7 @@ end
         :dry_run => Bool,
         :verbose => Bool]
 
-    installed_versions = []
+    installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[]]
     #@testset "install" begin
     #    Random.seed!()
         for _ in 1:10
