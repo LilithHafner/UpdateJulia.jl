@@ -83,7 +83,7 @@ end
             version = rand(["", "$(v.major)", "$(v.major).$(v.minor)", "$(v.major).$(v.minor).$(v.patch)", "$v"])
             kw = [k=>rand(source) for (k, source) in filter(x->rand(Bool), keywords)]
             v_inst = update_julia(version; kw...)
-            @test v_inst >= v
+            @test v_inst === v || UpdateJulia.prefer(v_inst, v)
             if (:dry_run => true) ∉ kw
                 push!(installed_versions, v_inst)
             end
