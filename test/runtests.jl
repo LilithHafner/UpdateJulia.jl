@@ -171,7 +171,10 @@ if ("CI" => "true") ∈ ENV
         @test UpdateJulia.version_of("julia-1.6") ∈ (VERSION == v"1.6.4" ? [v"1.6.3", v"1.6.4"] : [v"1.6.3"])
         # ensure that we actually have packages to migrate (this is not first to test fallback when we don't)
         project_toml = joinpath(first(Base.DEPOT_PATH), "environments", "v$mm", "Project.toml")
-        isfile(project_toml) || open(io -> write(io, "Statistics = \"10745b16-79ce-11e8-11f9-7d13ad32a3b2\"\n"), project_toml)
+        if !isfile(project_toml)
+            mkpath(dirname(project_toml))
+            open(io -> write(io, "Statistics = \"10745b16-79ce-11e8-11f9-7d13ad32a3b2\"\n"), project_toml)
+        end
         run(`julia-$mm -e "import Pkg; Pkg.add(\"Statistics\")"`)
         # note that the systemwide instilation happens after the user instilation so that it can overwrite
         @test update_julia("1.6", systemwide=true, migrate_packages=true) == UpdateJulia.latest("1.6") > v"1.6.3"
