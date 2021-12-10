@@ -378,7 +378,7 @@ function link(executable, bin, command, systemwide, v)
 
                 link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
                 if !systemwide && !startswith(link, homedir())
-                    printstyled("`julia` points to $link, not editing that file because this is not a systemwide instilation\n", color=Base.warn_color())
+                    printstyled("`$command` points to $link, which points to version $old. Not editing $link because this is not a systemwide instilation.\n", color=Base.warn_color())
                 else
                     printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
                     run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
