@@ -155,34 +155,35 @@ if ("CI" => "true") ∈ ENV
         # nightly
         @test update_julia("nightly") == UpdateJulia.nightly_version[]
 
+        # all these versions have to be at least 1.5.0-rc2 when windows archive became available
         # fallback for prefer_gui when not available
         # explicit systemwide
         # migrate packages
         Sys.iswindows() || println("requesting GUI...")
-        @test update_julia("1.5.3", prefer_gui = !Sys.iswindows(), systemwide=false, migrate_packages=true) == v"1.5.3"
+        @test update_julia("1.6.3", prefer_gui = !Sys.iswindows(), systemwide=false, migrate_packages=true) == v"1.6.3"
         # enusre there is something to overwrite
-        @test UpdateJulia.version_of("julia-1.5") == v"1.5.3"
+        @test UpdateJulia.version_of("julia-1.6") == v"1.6.3"
         # ensure that we actually have packages to migrate (this is not first to test fallback when we don't)
         import Pkg; Pkg.add("Statistics")
         # note that the systemwide instilation happens after the user instilation so that it can overwrite
-        @test update_julia("1.5", systemwide=true, migrate_packages=true) == v"1.5.4" == UpdateJulia.latest("1.5")
+        @test update_julia("1.6", systemwide=true, migrate_packages=true) == UpdateJulia.latest("1.6") > v"1.6.3"
         # ensure that migration actually happened
-        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.3", "Project.toml"))
-        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.3", "Manifest.toml"))
+        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Project.toml"))
+        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Manifest.toml"))
         # do overwrite
-        @test UpdateJulia.version_of("julia-1.5") == v"1.5.4"
+        @test UpdateJulia.version_of("julia-1.6") == UpdateJulia.latest("1.6")
         # failed migrate packages without force
-        @test update_julia("1.5.2", migrate_packages=true) == v"1.5.2"
+        @test update_julia("1.6.2", migrate_packages=true) == v"1.6.2"
         # don't overwrite
-        @test UpdateJulia.version_of("julia-1.5") == v"1.5.4"
+        @test UpdateJulia.version_of("julia-1.6") == UpdateJulia.latest("1.6")
 
         # successfully migrate packages with force
-        @test update_julia("1.3.0-", systemwide=true, migrate_packages=:force) == v"1.3.0-rc5"
-        @test update_julia("1.3.0", systemwide=false, migrate_packages=:force) == v"1.3.0"
+        @test update_julia("1.5.0-", systemwide=true, migrate_packages=:force) == v"1.5.0-rc2"
+        @test update_julia("1.5.0", systemwide=false, migrate_packages=:force) == v"1.5.0"
         # can't overwite the old instilation because it was systemwide
-        @test UpdateJulia.version_of("julia-1.3") == v"1.3.0-rc5"
-        # but still successfully sets julia-1.3.0
-        @test UpdateJulia.version_of("julia-1.3.0") == v"1.3.0"
+        @test UpdateJulia.version_of("julia-1.5") == v"1.5.0-rc2"
+        # but still successfully sets julia-1.5.0
+        @test UpdateJulia.version_of("julia-1.5.0") == v"1.5.0"
     end
 
     @testset "random matrix" begin
