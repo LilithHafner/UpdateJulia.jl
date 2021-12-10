@@ -40,6 +40,10 @@ end
     end
 end
 
+@testset "version_of()" begin
+    @test ismissing(UpdateJulia.version_of("this-should-not-be-a-valid-command-gj493fD62l4"))
+end
+
 @testset "versions[]" begin
     @test VersionNumber[v"0.1.2", v"0.3.1", v"0.5.0-rc2", v"0.6.0-pre.beta", v"0.7.0-beta",
         v"1.0.0", v"1.1.1", v"1.2.0-rc2", v"1.2.0-rc3", v"1.2.0", v"1.3.0-rc3", v"1.4.1",
