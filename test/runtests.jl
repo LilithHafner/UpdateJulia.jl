@@ -74,6 +74,9 @@ end
     @test 0 < t_before_fetch < t_after_fetch < time()
 end
 
+installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
+    v"1.5.3", v"1.5.4", v"1.5.2", v"1.3.0-rc5", v"1.3.0-rc5"]
+
 function random_matrix_test(n)
     versions = vcat(UpdateJulia.nightly_version[], filter!(collect(keys(UpdateJulia.versions[]))) do x
         x >= (Sys.iswindows() ? v"1.5.0-rc2" : v"1.0.0")
@@ -93,7 +96,6 @@ function random_matrix_test(n)
         :dry_run => Bool,
         :verbose => Bool]
 
-    installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[]]
     seed = rand(UInt32)
     @testset "install" begin
         Random.seed!(seed)
@@ -146,7 +148,12 @@ if ("CI" => "true") ∈ ENV
     @testset "curated tests" begin
         # TODO add any failing tests from the random matrix here so that we have a readable,
         # reproducible, and efficient list of tests to start with.
+
+        # default functionality
         @test update_julia() == UpdateJulia.latest()
+
+        # nightly
+        @test update_julia("nightly") == UpdateJulia.nightly_version[]
 
         # fallback for prefer_gui when not available
         # explicit systemwide
