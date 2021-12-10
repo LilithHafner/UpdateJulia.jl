@@ -53,13 +53,17 @@ search: update_julia
 
     •  verbose = dry_run print the final value of all arguments
 
+    •  migrate_packages = <upgrading to a Julia version without an existing environment>
+       whether to copy Project.toml to the new version and run Pkg.update(). May be true,
+       false, or :force. Only :force will replace an existing Project.toml
+
   Destination
-  
+
     •  aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"] which aliases to
        attempt to create for the installed version of Julia. Regardless, will not
        replace stable versions with less stable versions or newer versions with older
        versions of the same stability.
-       
+
     •  systemwide = ... install for all users, false only installs for current user.
 
     •  install_location = systemwide ? "..." : "..." directory

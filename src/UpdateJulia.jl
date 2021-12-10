@@ -134,7 +134,8 @@ If `version == "nightly"`, then installs the bleeding-edge nightly version.
 Behavior flags
 - `dry_run = false` skip the actual download and instillation
 - `verbose = dry_run` print the final value of all arguments
-$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it" : "")
+$(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it. Incompatible with `migrate_packages`." : "")
+- `migrate_packages = <upgrading to a Julia version without an existing environment>` whether to copy Project.toml to the new version and run `Pkg.update()`. May be `true`, `false`, or `:force`. Only `:force` will replace an existing Project.toml
 
 Destination
 - `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$(v.major).\$(v.minor).\$(v.patch)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
@@ -156,6 +157,7 @@ function update_julia(version::AbstractString="";
     fetch = time() > last_fetched[] + 60 * 15, # 15 minutes
     _v_url = ((fetch && UpdateJulia.fetch()); v_url(version, os_str, arch, prefer_gui)),
     v = first(_v_url),
+    migrate_packages = prefer(v, VERSION) && !isdir(joinpath(first(Base.DEPOT_PATH), "environments", "v$(v.major).$(v.minor)")),
     url = last(_v_url),
     aliases = unique(["julia", "julia-$(v.major).$(v.minor)", "julia-$(v.major).$(v.minor).$(v.patch)", "julia-$v"]),
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
@@ -221,6 +223,11 @@ function update_julia(version::AbstractString="";
 
     #Try these standard commands to see if they work, even if we didn't create them just now
     report(union(aliases, ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"]), v)
+
+    # Try to migrate after reporting successfull julia instilation because migrate may fail
+    # even if the install succeeds.
+    (migrate_packages == :force || migrate_packages) &&
+        UpdateJulia.migrate_packages(v, migrate_packages == :force)
 
     v
 end
@@ -379,6 +386,24 @@ function link(executable, bin, command, systemwide, v)
 
             end
         end
+    end
+end
+
+## Copy Packages ##
+function migrate_packages(v, force=false)
+    envpath = joinpath(first(Base.DEPOT_PATH), "environments")
+    source = joinpath(envpath, "v$(VERSION.major).$(VERSION.minor)", "Project.toml")
+    target = joinpath(envpath, "v$(v.major).$(v.minor)", "Project.toml")
+
+    if !isfile(source)
+        printstyled("Package migration failed because there was no Project.toml to copy from at $source\n", color=Base.warn_color())
+    elseif !force && ispath(target)
+        printstyled("Package migration failed because $target already exists. To overwrite that file, try again with `migrate_packages = :force` or run `UpdateJulia.migrate_packages(v\"$v\", true)`.\n", color=Base.warn_color())
+    else
+        mkpath(dirname(target))
+        cp(source, target, force=force)
+        run(`julia-$(v.major).$(v.minor) -e "using Pkg; Pkg.update()"`)
+        printstyled("Migrated packages from $(VERSION.major).$(VERSION.minor) to $(v.major).$(v.minor)\n", color=:green)
     end
 end
 
