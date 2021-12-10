@@ -74,7 +74,8 @@ end
     @test 0 < t_before_fetch < t_after_fetch < time()
 end
 
-installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[], VERSION,
+installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
+    UpdateJulia.latest("$(VERSION.major).$(VERSION.minor)"),
     v"1.5.3", v"1.5.4", v"1.5.2", v"1.3.0-rc5", v"1.3.0-rc5"]
 
 function random_matrix_test(n)
@@ -157,7 +158,8 @@ if ("CI" => "true") ∈ ENV
         @test update_julia("nightly") == UpdateJulia.nightly_version[]
 
         # this version
-        update_julia(string(VERSION))
+        mm = "$(VERSION.major).$(VERSION.minor)"
+        @test update_julia(mm) == UpdateJulia.latest(mm)
 
         # all these versions have to be at least 1.5.0-rc2 when windows archive became available
         # fallback for prefer_gui when not available
@@ -168,7 +170,7 @@ if ("CI" => "true") ∈ ENV
         # enusre there is something to overwrite
         @test UpdateJulia.version_of("julia-1.6") == v"1.6.3"
         # ensure that we actually have packages to migrate (this is not first to test fallback when we don't)
-        run(`julia-$VERSION -e "import Pkg; Pkg.add(\"Statistics\")"`)
+        run(`julia-$mm -e "import Pkg; Pkg.add(\"Statistics\")"`)
         # note that the systemwide instilation happens after the user instilation so that it can overwrite
         @test update_julia("1.6", systemwide=true, migrate_packages=true) == UpdateJulia.latest("1.6") > v"1.6.3"
         # ensure that migration actually happened
