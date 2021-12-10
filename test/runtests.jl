@@ -3,7 +3,7 @@ using Test
 using Random
 using Suppressor
 
-@testset "fetch" begin
+@testset "fetch()" begin
     @test UpdateJulia.last_fetched[] == 0
     t0 = time()
     @test nothing === UpdateJulia.fetch()
@@ -40,7 +40,7 @@ end
     end
 end
 
-@testset "versions" begin
+@testset "versions[]" begin
     @test VersionNumber[v"0.1.2", v"0.3.1", v"0.5.0-rc2", v"0.6.0-pre.beta", v"0.7.0-beta",
         v"1.0.0", v"1.1.1", v"1.2.0-rc2", v"1.2.0-rc3", v"1.2.0", v"1.3.0-rc3", v"1.4.1",
         v"1.4.2", v"1.5.1", v"1.5.4", v"1.6.0-rc3", v"1.6.1", v"1.6.4", v"1.7.0-beta2",
