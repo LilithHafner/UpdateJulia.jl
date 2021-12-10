@@ -84,11 +84,11 @@ function random_matrix_test(n)
     keywords = [
         # os_str => untested
         # arch => untested
-        :prefer_gui => Sys.iswindows() ? [false] : [true, false]
+        :prefer_gui => Sys.iswindows() ? [false] : [true, false],
         :fetch => Bool,
         # _v_url => untested
         # v => untested
-        :migrate_packages => [true, false, :force]
+        :migrate_packages => [true, false, :force],
         # url => untested
         # aliases => untested
         # :systemwide => Bool, unfortunatly, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
