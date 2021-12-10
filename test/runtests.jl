@@ -61,7 +61,7 @@ end
 
     # Force fetch
     t_before_fetch = UpdateJulia.last_fetched[]
-    @test update_julia("1.7.0-rc3", fetch = true) == v"1.7.0-rc3"
+    @test update_julia("1.7.0-rc3", fetch = true, dry_run=true) == v"1.7.0-rc3"
     t_after_fetch = UpdateJulia.last_fetched[]
     @test 0 < t_before_fetch < t_after_fetch < time()
 end
@@ -99,7 +99,7 @@ function random_matrix_test(n)
                 push!(installed_versions, v_inst)
             end
         end
-    #end
+    end
 
     commands = unique(vcat("julia", [["julia-$(v.major).$(v.minor)", "julia-$v"]
         for v in vcat(UpdateJulia.nightly_version[], versions)]...))
