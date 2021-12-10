@@ -221,11 +221,13 @@ function update_julia(version::AbstractString="";
         link(executable, bin, command * (@os ".exe" ""), systemwide, v)
     end
 
-    (migrate_packages == :force || migrate_packages) &&
-        UpdateJulia.migrate_packages(v, migrate_packages == :force)
-
     #Try these standard commands to see if they work, even if we didn't create them just now
     report(union(aliases, ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"]), v)
+
+    # Try to migrate after reporting successfull julia instilation because migrate may fail
+    # even if the install succeeds.
+    (migrate_packages == :force || migrate_packages) &&
+        UpdateJulia.migrate_packages(v, migrate_packages == :force)
 
     v
 end
