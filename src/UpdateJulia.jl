@@ -138,7 +138,7 @@ $(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installe
 - `migrate_packages = <upgrading to a Julia version without an existing environment>` whether to copy Project.toml to the new version and run `Pkg.update()`. May be `true`, `false`, or `:force`. Only `:force` will replace an existing Project.toml
 
 Destination
-- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$(v.major).\$(v.minor).\$(v.patch)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
+- `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
 - `systemwide = $(!startswith(Base.Sys.BINDIR, homedir()))` install for all users, `false` only installs for current user.
 - `install_location = systemwide ? "$(default_install_location(true, nothing))" : "$(default_install_location(false, nothing))"` directory to put installed binaries
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
@@ -159,7 +159,7 @@ function update_julia(version::AbstractString="";
     v = first(_v_url),
     migrate_packages = prefer(v, VERSION) && !isdir(joinpath(first(Base.DEPOT_PATH), "environments", "v$(v.major).$(v.minor)")),
     url = last(_v_url),
-    aliases = unique(["julia", "julia-$(v.major).$(v.minor)", "julia-$(v.major).$(v.minor).$(v.patch)", "julia-$v"]),
+    aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"],
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
     install_location = default_install_location(systemwide, v),
     bin = (@static Sys.iswindows() ? nothing : (systemwide ? "/usr/local/bin" : joinpath(homedir(), ".local/bin"))),
