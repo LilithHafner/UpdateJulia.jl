@@ -392,8 +392,11 @@ function migrate_packages(v, force=false)
     envpath = joinpath(first(Base.DEPOT_PATH), "environments")
     source = joinpath(envpath, "v$(VERSION.major).$(VERSION.minor)", "Project.toml")
     target = joinpath(envpath, "v$(v.major).$(v.minor)", "Project.toml")
-    if !force && ispath(target)
-        printstyled("Package migration failed because $(joinpath(envpath, "v$(v.major).$(v.minor)", "Project.toml")) already exists. To overwrite that file, try again with `migrate_packages = :force` or run `UpdateJulia.migrate_packages(v\"$v\", true)`.\n", color=Base.warn_color())
+
+    if !isfile(source)
+        printstyled("Package migration failed because there was no Project.toml to copy from at $source\n", color=Base.warn_color())
+    elseif !force && ispath(target)
+        printstyled("Package migration failed because $target already exists. To overwrite that file, try again with `migrate_packages = :force` or run `UpdateJulia.migrate_packages(v\"$v\", true)`.\n", color=Base.warn_color())
     else
         mkpath(dirname(target))
         cp(source, target, force=force)
