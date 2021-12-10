@@ -163,7 +163,7 @@ if ("CI" => "true") ∈ ENV
         # enusre there is something to overwrite
         @test UpdateJulia.version_of("julia-1.5") == v"1.5.3"
         # ensure that we actually have packages to migrate (this is not first to test fallback when we don't)
-        using Pkg; Pkg.add("Statistics")
+        import Pkg; Pkg.add("Statistics")
         # note that the systemwide instilation happens after the user instilation so that it can overwrite
         @test update_julia("1.5", systemwide=true, migrate_packages=true) == v"1.5.4" == UpdateJulia.latest("1.5")
         # ensure that migration actually happened
