@@ -3,9 +3,6 @@ using Test
 using Random
 using Suppressor
 
-import Pkg
-println(Pkg.DEPOT_PATH)
-
 @testset "fetch()" begin
     @test UpdateJulia.last_fetched[] == 0
     t0 = time()
@@ -183,7 +180,6 @@ if ("CI" => "true") ∈ ENV
         @test update_julia("1.6", systemwide=true, migrate_packages=true) == UpdateJulia.latest("1.6") > v"1.6.3"
         # ensure that migration actually happened
         @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Project.toml"))
-        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Manifest.toml"))
         # do overwrite
         @test UpdateJulia.version_of("julia-1.6") == UpdateJulia.latest("1.6")
         # failed migrate packages without force
@@ -193,6 +189,8 @@ if ("CI" => "true") ∈ ENV
 
         # successfully migrate packages with force
         @test update_julia("1.5.0-", systemwide=true, migrate_packages=:force) == v"1.5.0-rc2"
+        # Manifest.toml is not neccessarily created until we migrate with force.
+        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Manifest.toml"))
         @test update_julia("1.5.0", systemwide=false, migrate_packages=:force) == v"1.5.0"
         # can't overwite the old instilation because it was systemwide
         @test UpdateJulia.version_of("julia-1.5") == v"1.5.0-rc2"
