@@ -190,7 +190,11 @@ if ("CI" => "true") ∈ ENV
         @test update_julia("1.5.0-", systemwide=true, migrate_packages=:force, verbose=true) == v"1.5.0-rc2"
         # Manifest.toml is not neccessarily created until we migrate with force.
         @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.5", "Manifest.toml"))
+        println(UpdateJulia.version_of("julia-1.5"))
+        run(`which julia-1.5`)
         @test update_julia("1.5.0", systemwide=false, migrate_packages=:force, verbose=true) == v"1.5.0"
+        println(UpdateJulia.version_of("julia-1.5"))
+        run(`which julia-1.5`)
         # can't overwite the old instilation because it was systemwide
         @test UpdateJulia.version_of("julia-1.5") == v"1.5.0-rc2"
         # but still successfully sets julia-1.5.0
