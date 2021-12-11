@@ -3,6 +3,7 @@ using Test
 using Random
 using Suppressor
 
+import Pkg
 println(Pkg.DEPOT_PATH)
 
 @testset "fetch()" begin
