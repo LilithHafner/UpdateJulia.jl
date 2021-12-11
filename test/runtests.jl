@@ -3,6 +3,8 @@ using Test
 using Random
 using Suppressor
 
+println(Base.active_project())
+
 @testset "fetch()" begin
     @test UpdateJulia.last_fetched[] == 0
     t0 = time()
