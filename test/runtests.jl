@@ -175,7 +175,6 @@ if ("CI" => "true") ∈ ENV
             mkpath(dirname(project_toml))
             open(io -> write(io, "Statistics = \"10745b16-79ce-11e8-11f9-7d13ad32a3b2\"\n"), project_toml, "w")
         end
-        run(`julia-$mm -e "import Pkg; Pkg.add(\"Statistics\")"`)
         # note that the systemwide instilation happens after the user instilation so that it can overwrite
         @test update_julia("1.6", systemwide=true, migrate_packages=true) == UpdateJulia.latest("1.6") > v"1.6.3"
         # ensure that migration actually happened
@@ -190,7 +189,7 @@ if ("CI" => "true") ∈ ENV
         # successfully migrate packages with force
         @test update_julia("1.5.0-", systemwide=true, migrate_packages=:force, verbose=true) == v"1.5.0-rc2"
         # Manifest.toml is not neccessarily created until we migrate with force.
-        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Manifest.toml"))
+        @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.5", "Manifest.toml"))
         @test update_julia("1.5.0", systemwide=false, migrate_packages=:force, verbose=true) == v"1.5.0"
         # can't overwite the old instilation because it was systemwide
         @test UpdateJulia.version_of("julia-1.5") == v"1.5.0-rc2"
