@@ -404,7 +404,7 @@ function migrate_packages(v, force=false)
     else
         mkpath(dirname(target))
         cp(source, target, force=force)
-        run(`julia-$(v.major).$(v.minor) -e "using Pkg; Pkg.update()"`)
+        run(`julia-$(v.major).$(v.minor) -e "using Pkg; Pkg.activate($(dirname(target))); Pkg.update()"`)
         printstyled("Migrated packages from $(VERSION.major).$(VERSION.minor) to $(v.major).$(v.minor)\n", color=:green)
     end
 end
