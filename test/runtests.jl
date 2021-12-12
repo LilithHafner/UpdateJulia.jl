@@ -109,6 +109,7 @@ function random_matrix_test(n, seed)
 
     @testset "install" begin
         Random.seed!(seed)
+        println(rand())
         for _ in 1:n
             v = rand(versions)
             version = rand(["", "$(v.major)", "$(v.major).$(v.minor)", "$(v.major).$(v.minor).$(v.patch)", "$v"])
@@ -249,9 +250,11 @@ if ("CI" => "true") ∈ ENV
     @test update_julia("1.5", systemwide=true) == v"1.5.4"
 
     @testset "random matrix" begin
+        println(rand(UInt32))
         random_matrix_test(4, rand(UInt32)) # Reproducible
     end
 
+    println(rand(UInt32))
     random_matrix_test(15, rand(UInt32)) # Random seed
 
     # Finish with latest version installed
