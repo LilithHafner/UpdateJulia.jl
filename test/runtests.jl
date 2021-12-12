@@ -118,7 +118,7 @@ function random_matrix_test(n)
             end
             kw = [k=>rand(source) for (k, source) in filter(x->rand(Bool), keywords)]
             if i < 3
-                push!(kw, (:migrate_packages => :force))
+                kw = [(:migrate_packages => :force)]
             end
             try
                 v_inst = update_julia(version; kw...)
