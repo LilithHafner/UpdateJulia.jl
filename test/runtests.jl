@@ -121,16 +121,6 @@ function random_matrix_test(n)
                     push!(installed_versions, v_inst)
                 end
             catch x
-                println(x)
-                println(version)
-                println(x isa ProcessFailedException)
-                println(kw)
-                println((:migrate_packages => :force) ∈ kw)
-                println(UpdateJulia.latest(version))
-                println((UpdateJulia.latest(version).major, UpdateJulia.latest(version).minor))
-                println((VERSION.major, VERSION.minor))
-                println((UpdateJulia.latest(version).major, UpdateJulia.latest(version).minor) < (VERSION.major, VERSION.minor))
-
                 if x isa ProcessFailedException && ((:migrate_packages => :force) ∈ kw || (:migrate_packages => true) ∈ kw)
                     v = UpdateJulia.latest(version)
                     if (v.major, v.minor) < (VERSION.major, VERSION.minor)
@@ -140,13 +130,10 @@ function random_matrix_test(n)
                         # explicitly ask for package migration in a regression (even without
                         # force) it may fail, and this is okay.
                         @warn "failed backwards package migration to $v"
-                        println("\n\nCCCseaserchtextDDD\n\n")
                     else
-                        println("A")
                         rethrow()
                     end
                 else
-                    println("B")
                     rethrow()
                 end
             end
