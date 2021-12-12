@@ -146,14 +146,24 @@ function random_matrix_test(n, seed)
 
 
     @testset "check" begin
+        println(installed_versions)
         for c in commands
             cvs = c[7:end]
             installed = filter(installed_versions) do x
+                println()
+                println(c)
+                println(cvs)
+                println(x)
                 xs = string(x)
+                println(xs)
                 xs == cvs && true # Exact match counts
+                println("A")
                 # If inexact, and cvs is a complete version string, don't match
                 try string(VersionNumber(cvs)) == cvs && return false catch end
+                println("B")
                 # Otherwise match if prefix TODO migrate this to UpdateJulia.match
+                println(startswith(xs, cvs))
+                println()
                 startswith(xs, cvs)
             end
             actual = UpdateJulia.version_of(c)
