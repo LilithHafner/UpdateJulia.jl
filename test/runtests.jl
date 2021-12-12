@@ -110,10 +110,16 @@ function random_matrix_test(n)
     seed = rand(UInt32)
     @testset "install" begin
         Random.seed!(seed)
-        for _ in 1:n
+        for i in 1:n
             v = rand(versions)
             version = rand(["", "$(v.major)", "$(v.major).$(v.minor)", "$(v.major).$(v.minor).$(v.patch)", "$v"])
+            if i < 3
+                version = "1.0"
+            end
             kw = [k=>rand(source) for (k, source) in filter(x->rand(Bool), keywords)]
+            if i < 3
+                push!(kw, (:migrate_packages => :force))
+            end
             try
                 v_inst = update_julia(version; kw...)
                 @test v_inst === v || UpdateJulia.prefer(v_inst, v)
