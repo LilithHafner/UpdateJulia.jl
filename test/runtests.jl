@@ -131,12 +131,14 @@ function random_matrix_test(n)
                 println((VERSION.major, VERSION.minor))
                 println((UpdateJulia.latest(version).major, UpdateJulia.latest(version).minor) < (VERSION.major, VERSION.minor))
 
-                if x isa ProcessFailedException && (:migrate_packages => :force) ∈ kw
+                if x isa ProcessFailedException && ((:migrate_packages => :force) ∈ kw || (:migrate_packages => true) ∈ kw)
                     v = UpdateJulia.latest(version)
                     if (v.major, v.minor) < (VERSION.major, VERSION.minor)
                         # Package migratoin requires Pkg at version to be compatible with
-                        # VERSION's Project.toml. This is not required by SymVer, and not the
-                        # case for 1.0's Pkg with 1.8's Project.toml.
+                        # VERSION's Project.toml. This is not required by SymVer, and not
+                        # the case for 1.0's Pkg with 1.8's Project.toml. So if we
+                        # explicitly ask for package migration in a regression (even without
+                        # force) it may fail, and this is okay.
                         @warn "failed backwards package migration to $v"
                         println("\n\nCCCseaserchtextDDD\n\n")
                     else
