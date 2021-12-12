@@ -156,7 +156,7 @@ function random_matrix_test(n)
                 println(x)
                 xs = string(x)
                 println(xs)
-                xs == cvs && true # Exact match counts
+                xs == cvs && return true # Exact match counts
                 println("A")
                 # If inexact, and cvs is a complete version string, don't match
                 try string(VersionNumber(cvs)) == cvs && return false catch end
