@@ -403,7 +403,7 @@ function migrate_packages(v, force=false)
         printstyled("Package migration failed because $target already exists. To overwrite that file, try again with `migrate_packages = :force` or run `UpdateJulia.migrate_packages(v\"$v\", true)`.\n", color=Base.warn_color())
     else
         mkpath(dirname(target))
-        cp(source, target, force=force)
+        source == target || cp(source, target, force=force)
         run(`julia-$(v.major).$(v.minor) -e "using Pkg; Pkg.activate(\"$(escape_string(dirname(target)))\"); Pkg.update()"`)
         printstyled("Migrated packages from $(VERSION.major).$(VERSION.minor) to $(v.major).$(v.minor)\n", color=:green)
     end

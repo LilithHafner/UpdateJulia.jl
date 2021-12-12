@@ -165,6 +165,11 @@ if ("CI" => "true") ∈ ENV
         # nightly
         @test update_julia("nightly") == UpdateJulia.nightly_version[]
 
+        # Begin PREVIOUSLY FAILED TESTS
+        UpdateJulia.migrate_packages(VERSION, true) # Forcibly migrate packages to same directory
+        # ERROR: ArgumentError: 'src' and 'dst' refer to the same file/dir.This is not supported.
+        # End PREVIOUSLY FAILED TESTS
+
         # this version
         mm = "$(VERSION.major).$(VERSION.minor)"
         #@test update_julia(mm) == UpdateJulia.latest(mm) TODO if we need this, say why.
