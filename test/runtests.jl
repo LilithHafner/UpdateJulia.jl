@@ -231,7 +231,7 @@ if ("CI" => "true") ∈ ENV
     end
 
     # Get proper 1.5 & 1.5.0 installed so we don't trigger false positives in the matrix
-    @test update_julia("1.5", systemwide=true) == v"1.5"
+    @test update_julia("1.5", systemwide=true) == v"1.5.4"
     @test update_julia("1.5.0", systemwide=true) == v"1.5.0"
 
     @testset "random matrix" begin
