@@ -3,6 +3,15 @@ using Test
 using Random
 using Suppressor
 
+@testset "report path before" begin
+    println(ENV["PATH"])
+    if Sys.iswindows()
+        for systemwide in (true,false)
+            println(strip(open(io -> read(io, String), `powershell.exe -nologo -noprofile -command "[Environment]::GetEnvironmentVariable(\"PATH\"$(systemwide ? "" : ", \"User\""))"`)))
+        end
+    end
+end
+
 @testset "fetch()" begin
     @test UpdateJulia.last_fetched[] == 0
     t0 = time()
@@ -246,7 +255,7 @@ else
     @warn "Skipped installation tests!"
 end
 
-@testset "report path" begin
+@testset "report path after" begin
     println(ENV["PATH"])
     if Sys.iswindows()
         for systemwide in (true,false)
