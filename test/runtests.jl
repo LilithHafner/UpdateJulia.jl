@@ -128,7 +128,7 @@ function random_matrix_test(n)
                 xs = string(x)
                 xs == cvs && true # Exact match counts
                 # If inexact, and cvs is a complete version string, don't match
-                try string(VersionString(cvs)) == cvs && return false catch end
+                try string(VersionNumber(cvs)) == cvs && return false catch end
                 # Otherwise match if prefix TODO migrate this to UpdateJulia.match
                 startswith(xs, cvs)
             end
@@ -148,9 +148,9 @@ function random_matrix_test(n)
                     xs = string(x)
                     println(xs)
                     println(xs == cvs)
-                    println(VersionString(cvs))
-                    println(string(VersionString(cvs)))
-                    println(string(VersionString(cvs)) == cvs)
+                    println(VersionNumber(cvs))
+                    println(string(VersionNumber(cvs)))
+                    println(string(VersionNumber(cvs)) == cvs)
                     println(startswith(xs, cvs))
 
                     @test false
