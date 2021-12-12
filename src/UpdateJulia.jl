@@ -135,7 +135,7 @@ Behavior flags
 - `dry_run = false` skip the actual download and instillation
 - `verbose = dry_run` print the final value of all arguments
 $(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it. Incompatible with `migrate_packages`." : "")
-- `migrate_packages = <upgrading to a Julia version without an existing environment>` whether to copy Project.toml to the new version and run `Pkg.update()`. May be `true`, `false`, or `:force`. Only `:force` will replace an existing Project.toml
+- `migrate_packages = <upgrading to a Julia version without an existing global environment>` whether to migrate packages in the default global environment. May be `true`, `false`, or `:force`. Only `:force` will replace an existing Project.toml
 
 Destination
 - `aliases = ["julia", "julia-\$(v.major).\$(v.minor)", "julia-\$v"]` which aliases to attempt to create for the installed version of Julia. Regardless, will not replace stable versions with less stable versions or newer versions with older versions of the same stability.
@@ -157,7 +157,7 @@ function update_julia(version::AbstractString="";
     fetch = time() > last_fetched[] + 60 * 15, # 15 minutes
     _v_url = ((fetch && UpdateJulia.fetch()); v_url(version, os_str, arch, prefer_gui)),
     v = first(_v_url),
-    migrate_packages = prefer(v, VERSION) && !isdir(joinpath(first(Base.DEPOT_PATH), "environments", "v$(v.major).$(v.minor)")),
+    migrate_packages = prefer(v, VERSION) && !ispath(joinpath(first(Base.DEPOT_PATH), "environments", "v$(v.major).$(v.minor)", "Project.toml")),
     url = last(_v_url),
     aliases = ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"],
     systemwide = !startswith(Base.Sys.BINDIR, homedir()),
