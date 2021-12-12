@@ -151,20 +151,6 @@ function random_matrix_test(n)
                     println("Gives result: $actual")
                     println("Installed these compatible versions, in this order: $installed")
                     println("Specifically, $i, which is better than $actual")
-
-                    println(c)
-                    println(cvs)
-                    println(i)
-                    x = i
-                    println(x)
-                    xs = string(x)
-                    println(xs)
-                    println(xs == cvs)
-                    println(VersionNumber(cvs))
-                    println(string(VersionNumber(cvs)))
-                    println(string(VersionNumber(cvs)) == cvs)
-                    println(startswith(xs, cvs))
-
                     @test false
                 else
                     @test true

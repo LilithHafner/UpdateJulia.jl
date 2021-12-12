@@ -371,7 +371,6 @@ function link(executable, bin, command, systemwide, v)
         # Make a link from the executable in the install location to a bin shared with other julia versions
         old = version_of(command)
         if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
-            println("ln -sf $executable $link")
             run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
 
             old = version_of(command)
@@ -382,7 +381,6 @@ function link(executable, bin, command, systemwide, v)
                     printstyled("`$command` points to $link, which points to version $old. Not editing $link because this is not a systemwide instilation.\n", color=Base.warn_color())
                 else
                     printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
-                    println("ln -sf $executable $link")
                     run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
                 end
 
