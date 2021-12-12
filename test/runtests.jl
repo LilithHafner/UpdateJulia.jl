@@ -105,10 +105,22 @@ function random_matrix_test(n)
             v = rand(versions)
             version = rand(["", "$(v.major)", "$(v.major).$(v.minor)", "$(v.major).$(v.minor).$(v.patch)", "$v"])
             kw = [k=>rand(source) for (k, source) in filter(x->rand(Bool), keywords)]
-            v_inst = update_julia(version; kw...)
-            @test v_inst === v || UpdateJulia.prefer(v_inst, v)
-            if (:dry_run => true) ∉ kw
-                push!(installed_versions, v_inst)
+            try
+                v_inst = update_julia(version; kw...)
+                @test v_inst === v || UpdateJulia.prefer(v_inst, v)
+                if (:dry_run => true) ∉ kw
+                    push!(installed_versions, v_inst)
+                end
+            catch x
+                if x isa ProcessFailedException && (:migrate_packages => :force) ∈ kw &&
+                    (version.major, version.minor) < (VERSION.major, VERSION.minor)
+                    # Package migratoin requires Pkg at version to be compatible with
+                    # VERSION's Project.toml. This is not required by SymVer, and not the
+                    # case for 1.0's Pkg with 1.8's Project.toml.
+                    @warn "failed backwards package migration to $version"
+                else
+                    rethrow()
+                end
             end
         end
     end
