@@ -121,12 +121,16 @@ function random_matrix_test(n)
                     push!(installed_versions, v_inst)
                 end
             catch x
-                if x isa ProcessFailedException && (:migrate_packages => :force) ∈ kw &&
-                    (version.major, version.minor) < (VERSION.major, VERSION.minor)
-                    # Package migratoin requires Pkg at version to be compatible with
-                    # VERSION's Project.toml. This is not required by SymVer, and not the
-                    # case for 1.0's Pkg with 1.8's Project.toml.
-                    @warn "failed backwards package migration to $version"
+                if x isa ProcessFailedException && (:migrate_packages => :force) ∈ kw
+                    v = UpdateJulia.latest(version)
+                    if (v.major, v.minor) < (VERSION.major, VERSION.minor)
+                        # Package migratoin requires Pkg at version to be compatible with
+                        # VERSION's Project.toml. This is not required by SymVer, and not the
+                        # case for 1.0's Pkg with 1.8's Project.toml.
+                        @warn "failed backwards package migration to $v"
+                    else
+                        rethrow()
+                    end
                 else
                     rethrow()
                 end
