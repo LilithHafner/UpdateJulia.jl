@@ -75,7 +75,7 @@ end
 end
 
 installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
-    UpdateJulia.latest("$(VERSION.major).$(VERSION.minor)"),
+    #UpdateJulia.latest("$(VERSION.major).$(VERSION.minor)"),
     v"1.6.3", v"1.6.4", v"1.6.2", v"1.5.0-rc2", v"1.5.0"]
 
 function random_matrix_test(n)
@@ -167,7 +167,7 @@ if ("CI" => "true") ∈ ENV
 
         # this version
         mm = "$(VERSION.major).$(VERSION.minor)"
-        @test update_julia(mm) == UpdateJulia.latest(mm)
+        #@test update_julia(mm) == UpdateJulia.latest(mm) TODO if we need this, say why.
 
         # all these versions have to be at least 1.5.0-rc2 when windows archive became available
         # fallback for prefer_gui when not available
@@ -210,7 +210,7 @@ if ("CI" => "true") ∈ ENV
         # but still successfully sets julia-1.5.0
         @test UpdateJulia.version_of("julia-1.5.0") == v"1.5.0"
     end
-    
+
     # Get proper 1.5.0 installed so we don't trigger false positives in the matrix
     @test update_julia("1.5.0", systemwide=true) == v"1.5.0"
 
