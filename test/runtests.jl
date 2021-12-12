@@ -108,6 +108,7 @@ function random_matrix_test(n, seed)
         :verbose => Bool]
 
     @testset "install" begin
+        println(rand())
         Random.seed!(seed)
         println(rand())
         for _ in 1:n
@@ -181,7 +182,7 @@ end
 if ("CI" => "true") ∈ ENV
     printstyled("WARNING: this will both install out of date julia versions and change what the command `julia` points to.\n", color=Base.warn_color())
     printstyled("If all goes well, it will finish with the latest stable version of julia installed.\n", color=Base.warn_color())
-
+#=
     @testset "curated tests" begin
         # TODO add any failing tests from the random matrix here so that we have a readable,
         # reproducible, and efficient list of tests to start with.
@@ -248,7 +249,7 @@ if ("CI" => "true") ∈ ENV
     # Get proper 1.5 installed so we don't trigger false positives in the matrix
     # by masking julia-1.5
     @test update_julia("1.5", systemwide=true) == v"1.5.4"
-
+=#
     @testset "random matrix" begin
         println(rand(UInt32))
         random_matrix_test(4, rand(UInt32)) # Reproducible
