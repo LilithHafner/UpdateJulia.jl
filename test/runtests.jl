@@ -215,6 +215,7 @@ if ("CI" => "true") ∈ ENV
 
         # successfully migrate packages with force
         @test update_julia("1.5.0-", systemwide=true, migrate_packages=:force, verbose=true) == v"1.5.0-rc2"
+        @test UpdateJulia.version_of("julia-1.5.0") == missing
         # Manifest.toml is not neccessarily created until we migrate with force.
         @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.5", "Manifest.toml"))
         @test update_julia("1.5.0", systemwide=false, migrate_packages=:force, verbose=true) == v"1.5.0"
@@ -230,9 +231,9 @@ if ("CI" => "true") ∈ ENV
         @test UpdateJulia.version_of("julia-1.5.0") == v"1.5.0"
     end
 
-    # Get proper 1.5 & 1.5.0 installed so we don't trigger false positives in the matrix
+    # Get proper 1.5 installed so we don't trigger false positives in the matrix
+    # by masking julia-1.5
     @test update_julia("1.5", systemwide=true) == v"1.5.4"
-    @test update_julia("1.5.0", systemwide=true) == v"1.5.0"
 
     @testset "random matrix" begin
         random_matrix_test(4) # Reproducible
