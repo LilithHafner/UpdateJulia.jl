@@ -119,13 +119,6 @@ function random_matrix_test(n)
                     # case for 1.0's Pkg with 1.8's Project.toml.
                     @warn "failed backwards package migration to $version"
                 else
-                    println(x)
-                    println(typeof(x))
-                    println(kw)
-                    println((:migrate_packages => :force) ∈ kw)
-                    println(version)
-                    println(VERSION)
-                    println((version.major, version.minor) < (VERSION.major, VERSION.minor))
                     rethrow()
                 end
             end
