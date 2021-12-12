@@ -108,7 +108,7 @@ function random_matrix_test(n)
         :verbose => Bool]
 
     seed = rand(UInt32)
-    #@testset "install" begin
+    @testset "install" begin
         Random.seed!(seed)
         for _ in 1:n
             v = rand(versions)
@@ -138,7 +138,7 @@ function random_matrix_test(n)
                 end
             end
         end
-    #end
+    end
 
     commands = unique(vcat("julia", [["julia-$(v.major).$(v.minor)", "julia-$v"]
         for v in vcat(UpdateJulia.nightly_version[], versions)]...))
