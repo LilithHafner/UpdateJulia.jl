@@ -86,7 +86,7 @@ installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
     #UpdateJulia.latest("$(VERSION.major).$(VERSION.minor)"),
     v"1.6.3", v"1.6.4", v"1.6.2", v"1.5.0-rc2", v"1.5.0", v"1.5.4"]
 
-function random_matrix_test(n, seed)
+function random_matrix_test(n)
     versions = vcat(UpdateJulia.nightly_version[], filter!(collect(keys(UpdateJulia.versions[]))) do x
         x >= (Sys.iswindows() ? v"1.5.0-rc2" : v"1.0.0")
     end)
