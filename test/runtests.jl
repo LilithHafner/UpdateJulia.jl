@@ -87,7 +87,7 @@ installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
     #UpdateJulia.latest("$(VERSION.major).$(VERSION.minor)"),
     v"1.6.3", v"1.6.4", v"1.6.2", v"1.5.0-rc2", v"1.5.0"]
 
-function random_matrix_test(n)
+function random_matrix_test(n, seed)
     versions = vcat(UpdateJulia.nightly_version[], filter!(collect(keys(UpdateJulia.versions[]))) do x
         x >= (Sys.iswindows() ? v"1.5.0-rc2" : v"1.0.0")
     end)
@@ -107,7 +107,6 @@ function random_matrix_test(n)
         :dry_run => Bool,
         :verbose => Bool]
 
-    seed = rand(UInt32)
     @testset "install" begin
         Random.seed!(seed)
         for _ in 1:n
@@ -250,10 +249,10 @@ if ("CI" => "true") ∈ ENV
     @test update_julia("1.5", systemwide=true) == v"1.5.4"
 
     @testset "random matrix" begin
-        random_matrix_test(4) # Reproducible
+        random_matrix_test(4, rand(UInt32)) # Reproducible
     end
 
-    random_matrix_test(15) # Random seed
+    random_matrix_test(15, rand(UInt32)) # Random seed
 
     # Finish with latest version installed
     @test UpdateJulia.version_of("julia") == UpdateJulia.latest()
