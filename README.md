@@ -40,7 +40,7 @@ v"1.7.0-rc3"
 
 julia> update_julia("1.8") # nightly, update_julia("nightly") also works
 installing julia 1.8.0-DEV
-This version is an expiremental development build not reccomended for most users. The latest
+This version is an experimental development build not recommended for most users. The latest
 official release is 1.7.0
 Success! `julia-1.8` & `julia-1.8.0-DEV` now to point to 1.8.0-DEV
 v"1.8.0-DEV"
@@ -63,7 +63,7 @@ search: update_julia
 
   Behavior flags
 
-    •  dry_run = false skip the actual download and instillation
+    •  dry_run = false skip the actual download and installation
 
     •  verbose = dry_run print the final value of all arguments
 

@@ -132,7 +132,7 @@ If `version == "nightly"`, then installs the bleeding-edge nightly version.
 
 # Keyword Arguments
 Behavior flags
-- `dry_run = false` skip the actual download and instillation
+- `dry_run = false` skip the actual download and installation
 - `verbose = dry_run` print the final value of all arguments
 $(Sys.iswindows() ? "- `prefer_gui = false` if true, prefer using the \"installer\" version rather than downloading the \"archive\" version and letting UpdateJulia automatically install it. Incompatible with `migrate_packages`." : "")
 - `migrate_packages = <upgrading to a later version of Julia without an existing global environment>` whether to migrate packages in the default global environment. May be `true`, `false`, or `:force`. Only `:force` will replace an existing Project.toml
@@ -177,7 +177,7 @@ function update_julia(version::AbstractString="";
         download_delete(url) do file
             mv(file, file*".exe")
             try
-                printstyled("Lanuching GUI installer now:\n", color=:green)
+                printstyled("Launching GUI installer now:\n", color=:green)
                 run(`$file.exe`)
             finally
                 mv(file*".exe", file)
@@ -196,7 +196,7 @@ function update_julia(version::AbstractString="";
         end
     catch x
         if x isa Base.IOError && systemwide && occursin("permission denied", x.msg)
-            printstyled("Permission denied attempting to perform a systemwide instilation."*
+            printstyled("Permission denied attempting to perform a systemwide installation."*
                 "Try again with `systemwide=false` or run with elevated permissions.\n",
                 color=Base.error_color())
         end
@@ -205,8 +205,8 @@ function update_julia(version::AbstractString="";
 
     @static if Sys.iswindows()
         # Windows doesn't use the bin system, instead adding each individual julia
-        # instillation to path. This approach does a worse job of handling multiple versions
-        # overwriting eachother, but Windows doesn't support symlinks for ordinary users,
+        # installation to path. This approach does a worse job of handling multiple versions
+        # overwriting each other, but Windows doesn't support symlinks for ordinary users,
         # and hardlinks to julia from different executables don't run, so while possible, it
         # would be much more work to use the more effective unix approach. For now, we
         # create version specific executables, add everything to path, and let the user deal
@@ -224,7 +224,7 @@ function update_julia(version::AbstractString="";
     #Try these standard commands to see if they work, even if we didn't create them just now
     report(union(aliases, ["julia", "julia-$(v.major).$(v.minor)", "julia-$v"]), v)
 
-    # Try to migrate after reporting successfull julia instilation because migrate may fail
+    # Try to migrate after reporting successful julia installation because migrate may fail
     # even if the install succeeds.
     (migrate_packages == :force || migrate_packages) &&
         UpdateJulia.migrate_packages(v, migrate_packages == :force)
@@ -238,7 +238,7 @@ function prereport(v)
         printstyled("installing the latest version of julia: $v\n", color = :green)
     elseif "DEV" ∈ v.prerelease
         printstyled("installing julia $v\n"*
-        "This version is an expiremental development build not reccomended for most users. "*
+        "This version is an experimental development build not recommended for most users. "*
         "The latest official release is $(latest())\n", color = :red)
     else
         printstyled("installing julia $v\n", color = :yellow)
@@ -249,7 +249,7 @@ end
 
 ## Download ##
 function download_delete(f, url)
-    # use download instead of Downloads.download for backwards compatability
+    # use download instead of Downloads.download for backwards compatibility
     file = @suppress_err download(url)
     try
         f(file)
@@ -275,10 +275,10 @@ function extract(install_location, download_file, v)
         end
         "$install_location/$folder.app/Contents/Resources/julia/bin/julia"
     else
-        # We have to extract to a temporary location instead of directly into
-        # install_location because we don't know what the name of the extracted folder is.
-        # Specifically, on nightlies, it is (today) julia-db1d2f5891. We need to return the
-        # executable location which entails determining this extension.
+        # We must extract to a temporary location instead of directly into install_location
+        # because we don't know what the name of the extracted folder is. Specifically, on
+        # nightlies, it is (today) julia-db1d2f5891. We need to return the executable
+        # location which entails determining this extension.
         extract_location = mktempdir()
         @static if Sys.iswindows()
             run(`powershell.exe -nologo -noprofile -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('$download_file', '$extract_location'); }"`)
@@ -325,11 +325,11 @@ end
 """
     insert_path(path, entry, v)
 
-Insert path entry after valid & prefered julia but before unknown & unprefered julia
+Insert path entry after valid & preferred julia but before unknown & unpreferred julia
 
-Instert entry into path following these guidelines
+Insert entry into path following these guidelines
 - after versions `prefer`red over `v`
-- before versions `v` is `prefer`red over (inluding unknown versions)
+- before versions `v` is `prefer`red over (including unknown versions)
 - skip operation if `entry` already meets above guidelines
 - before existing entries for `v`
 - as late as possible
@@ -349,7 +349,7 @@ function insert_path(path, entry, v)
     last_better = findlast(k->prefer(k[1], v), keys)
     last_better === nothing && (last_better = 0)
 
-    # before versions `v` is `prefer`red over (inluding unknown versions) & before existing entries for `v`
+    # before versions `v` is `prefer`red over (including unknown versions) & before existing entries for `v`
     first_worse_or_eq = findfirst(k -> k[2] && !prefer(k[1], v), keys[last_better+1:end])
     first_worse_or_eq === nothing && (first_worse_or_eq = lastindex(entries)+1-last_better)
     first_worse_or_eq += last_better
@@ -364,23 +364,23 @@ function link(executable, bin, command, systemwide, v)
     link = joinpath(bin, command)
     @static if Sys.iswindows()
         # Make a hard link from julia.exe to julia-1.6.4.exe within the same directory
-        # because that hardlink won't work accross directories and a symlink requires
-        # priviledges
+        # because that hardlink won't work across directories and a symlink requires
+        # privileges
         isfile(link) || run(`cmd.exe -nologo -noprofile /c mklink /H $link $executable`)
     else
         # Make a link from the executable in the install location to a bin shared with other julia versions
         old = version_of(command)
-        if !prefer(old, v) # If v is as good or better than old, a symlink is warrented
+        if !prefer(old, v) # If v is as good or better than old, a symlink is warranted
             run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
 
             old = version_of(command)
-            if prefer(v, old) # A worse symlink has higher precidence
+            if prefer(v, old) # A worse symlink has higher precedence
 
                 link = strip(open(x -> read(x, String), `$(@os "which.exe" "which") $command`))
                 if !systemwide && !startswith(link, homedir())
-                    printstyled("`$command` points to $link, which points to version $old. Not editing $link because this is not a systemwide instilation.\n", color=Base.warn_color())
+                    printstyled("`$command` points to $link, which points to version $old. Not editing $link because this is not a systemwide installation.\n", color=Base.warn_color())
                 else
-                    printstyled("Replacing $link with a symlink to this instilation\n", color=Base.info_color())
+                    printstyled("Replacing $link with a symlink to this installation\n", color=Base.info_color())
                     run(`ln -sf $executable $link`) # Because force is not available via Base.symlink
                 end
 

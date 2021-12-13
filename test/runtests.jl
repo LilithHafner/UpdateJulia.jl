@@ -100,7 +100,7 @@ function random_matrix_test(n)
         :migrate_packages => [true, false, :force],
         # url => untested
         # aliases => untested
-        # :systemwide => Bool, unfortunatly, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
+        # :systemwide => Bool, unfortunately, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
         :install_location => [mktempdir(), mktempdir()], # Tuple sampling is missing in julia 1.0
         # bin => untested
         :dry_run => Bool,
@@ -123,7 +123,7 @@ function random_matrix_test(n)
                     if (v.major, v.minor) < (VERSION.major, VERSION.minor)
                         # Package migratoin requires Pkg at version to be compatible with
                         # VERSION's Project.toml. This is not required by SymVer, and not
-                        # the case for 1.0's Pkg with 1.8's Project.toml. So if we
+                        # the case for 1.0's Pkg with 1.8's Project.toml. So, if we
                         # explicitly ask for package migration in a regression (even without
                         # force) it may fail, and this is okay.
                         @warn "failed backwards package migration to $v"
@@ -192,7 +192,7 @@ if ("CI" => "true") ∈ ENV
 
         # Begin PREVIOUSLY FAILED TESTS
         UpdateJulia.migrate_packages(VERSION, true) # Forcibly migrate packages to same directory
-        # ERROR: ArgumentError: 'src' and 'dst' refer to the same file/dir.This is not supported.
+        # ERROR: ArgumentError: 'src' and 'dst' refer to the same file/dir. This is not supported.
         # End PREVIOUSLY FAILED TESTS
 
         # this version
@@ -205,7 +205,7 @@ if ("CI" => "true") ∈ ENV
         # migrate packages
         Sys.iswindows() || println("requesting GUI...")
         @test update_julia("1.6.3", prefer_gui = !Sys.iswindows(), systemwide=false, migrate_packages=true) == v"1.6.3"
-        # enusre there is something to overwrite
+        # ensure there is something to overwrite
         @test UpdateJulia.version_of("julia-1.6") ∈ (VERSION == v"1.6.4" ? [v"1.6.3", v"1.6.4"] : [v"1.6.3"])
         # ensure that we actually have packages to migrate (this is not first to test fallback when we don't)
         project_toml = joinpath(first(Base.DEPOT_PATH), "environments", "v$mm", "Project.toml")
@@ -213,7 +213,7 @@ if ("CI" => "true") ∈ ENV
             mkpath(dirname(project_toml))
             open(io -> write(io, "Statistics = \"10745b16-79ce-11e8-11f9-7d13ad32a3b2\"\n"), project_toml, "w")
         end
-        # note that the systemwide instilation happens after the user instilation so that it can overwrite
+        # note that the systemwide installation happens after the user installation so that it can overwrite
         @test update_julia("1.6", systemwide=true, migrate_packages=true) == UpdateJulia.latest("1.6") > v"1.6.3"
         # ensure that migration actually happened
         @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.6", "Project.toml"))
@@ -232,9 +232,9 @@ if ("CI" => "true") ∈ ENV
         @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.5", "Manifest.toml"))
         @test update_julia("1.5.0", systemwide=false, migrate_packages=:force, verbose=true) == v"1.5.0"
         @test UpdateJulia.@os(
-            # windows doesn't use a bin, and its only the user path we are reordering.
+            # windows doesn't use a bin, and it's only the user path we are reordering.
             UpdateJulia.version_of("julia-1.5") == v"1.5.0",
-            # can't overwite the old instilation because it was systemwide
+            # can't overwite the old installation because it was systemwide
             UpdateJulia.version_of("julia-1.5") == v"1.5.0-rc2",
             # system bin may come after user bin, so we have to specify the bin
             UpdateJulia.version_of("/usr/local/bin/julia-1.5") == v"1.5.0-rc2"
