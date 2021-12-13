@@ -24,12 +24,26 @@ installing the latest version of julia: 1.7.0
 Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0
 v"1.7.0"
 
-julia> update_julia("1.4")
+julia> update_julia("1.4") # old
 installing julia 1.4.2
 This version is out of date. The latest official release is 1.7.0
 ...
 Success! `julia-1.4.2` & `julia-1.4` now to point to 1.4.1
 v"1.4.2"
+
+julia> update_julia("1.7.0-rc3") # release candidate
+installing julia 1.7.0-rc3
+This version is out of date. The latest official release is 1.7.0
+...
+Success! `julia-1.7.0-rc3` now to point to 1.7.0-rc3
+v"1.7.0-rc3"
+
+julia> update_julia("1.8") # nightly, update_julia("nightly") also works
+installing julia 1.8.0-DEV
+This version is an expiremental development build not reccomended for most users. The latest
+official release is 1.7.0
+Success! `julia-1.8` & `julia-1.8.0-DEV` now to point to 1.8.0-DEV
+v"1.8.0-DEV"
 ```
 
 ## Docstring
@@ -53,9 +67,9 @@ search: update_julia
 
     •  verbose = dry_run print the final value of all arguments
 
-    •  migrate_packages = <upgrading to a Julia version without an existing environment>
-       whether to copy Project.toml to the new version and run Pkg.update(). May be true,
-       false, or :force. Only :force will replace an existing Project.toml
+    •  migrate_packages = <upgrading to a later version of Julia without an existing
+       global environment> whether to migrate packages in the default global environment.
+       May be true, false, or :force. Only :force will replace an existing Project.toml
 
   Destination
 
@@ -98,7 +112,3 @@ Mac    | `/Applications` | `/usr/local/bin`                          | `~/Applic
 Windows| `\Program Files`| automatically add install location to path| `~\AppData\Local\Programs`| automatically add install location to path
 
 \* Unix has somewhat loose conventions for install locations. If you already have Julia installed in a location that falls within those conventions, UpdateJulia will install the new version of Julia right next to the one you are currently using.
-
-## Known issues (contributions welcome!)
-- Does not automatically migrate `Project.toml` and run `Pkg.update()`.
-- Management of multiple versions on Windows is annoying. We have to parse your PATH and make some guesses. Hopefully this will work in most cases, but it could certianly fail on edge cases (e.g. if your path includes directories with `;` in their names, or already has multiple versions of julia on it in an unexpected order or in unexpected locations). If you run into such an edge case, please report them on this repository! You can also manually edit your path variables by pressing windows+r enterting `rundll32 sysdm.cpl,EditEnvironmentVariables`, and pressing ok.
