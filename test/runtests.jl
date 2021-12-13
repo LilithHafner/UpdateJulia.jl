@@ -80,6 +80,10 @@ end
     @test update_julia("1.7.0-rc3", fetch = true, dry_run=true) == v"1.7.0-rc3"
     t_after_fetch = UpdateJulia.last_fetched[]
     @test 0 < t_before_fetch < t_after_fetch <= time()
+
+    # GUI
+    @test update_julia("1.2", dry_run=true, verbose=false) == v"1.2.0"
+    @test update_julia("1.6", prefer_gui=true, dry_run=true, verbose=false) == v"1.6.4"
 end
 
 installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
