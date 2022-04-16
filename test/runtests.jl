@@ -83,7 +83,7 @@ end
 
     # GUI
     @test update_julia("1.2", dry_run=true, verbose=false) == v"1.2.0"
-    @test update_julia("1.6", prefer_gui=true, dry_run=true, verbose=false) == v"1.6.4"
+    @test update_julia("1.6", prefer_gui=true, dry_run=true, verbose=false) >= v"1.6.6"
 end
 
 installed_versions = [UpdateJulia.latest(), UpdateJulia.nightly_version[],
