@@ -7,6 +7,8 @@
 
 ## Simple cross platform julia installer
 
+Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows.
+
 Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads/.
 
 ## Usage
