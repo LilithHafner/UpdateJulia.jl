@@ -115,7 +115,7 @@ function random_matrix_test(n)
         # url => untested
         # aliases => untested
         # :systemwide => Bool, unfortunately, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
-        :install_location => [mktempdir(), mktempdir()], # Tuple sampling is missing in julia 1.0
+        :install_location => [mktempdir(), mktempdir(), joinpath("~","foo1729","bar")], # Tuple sampling is missing in julia 1.0
         # bin => untested
         :dry_run => Bool,
         :verbose => Bool]
@@ -160,6 +160,7 @@ function random_matrix_test(n)
 
 
     @testset "check" begin
+        @test !Sys.isunix() || !isdir("~")
         for c in commands
             cvs = c[7:end]
             installed = filter(installed_versions) do x
@@ -255,6 +256,9 @@ if ("CI" => "true") ∈ ENV
         )
         # but still successfully sets julia-1.5.0
         @test UpdateJulia.version_of("julia-1.5.0") == v"1.5.0"
+
+        @test update_julia("1.8"; install_location=joinpath("~","bin")) >= v"1.8" # issue #23
+        @test Sys.isunix() ≠ isdir("~")
     end
 
     # Get proper 1.5 installed so we don't trigger false positives in the matrix
