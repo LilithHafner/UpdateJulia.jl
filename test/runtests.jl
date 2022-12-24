@@ -247,7 +247,7 @@ if ("CI" => "true") ∈ ENV
         # but still successfully sets julia-1.5.0
         @test UpdateJulia.version_of("julia-1.5.0") == v"1.5.0"
 
-        @test update_julia("1.8"; install_location="~/bin") >= v"1.8" # issue #23
+        @test update_julia("1.8"; install_location=joinpath("~","bin")) >= v"1.8" # issue #23
         @test Sys.isunix() ≠ isdir("~")
     end
 
