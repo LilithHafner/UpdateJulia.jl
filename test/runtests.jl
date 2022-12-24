@@ -150,7 +150,7 @@ function random_matrix_test(n)
 
 
     @testset "check" begin
-        @test !isdir("~")
+        @test !Sys.isunix() || !isdir("~")
         for c in commands
             cvs = c[7:end]
             installed = filter(installed_versions) do x
@@ -246,6 +246,9 @@ if ("CI" => "true") ∈ ENV
         )
         # but still successfully sets julia-1.5.0
         @test UpdateJulia.version_of("julia-1.5.0") == v"1.5.0"
+
+        @test update_julia("1.8"; bin="~/bin") >= v"1.8" # issue #23
+        @test Sys.isunix() ≠ isdir("~")
     end
 
     # Get proper 1.5 installed so we don't trigger false positives in the matrix
