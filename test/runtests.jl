@@ -105,7 +105,7 @@ function random_matrix_test(n)
         # url => untested
         # aliases => untested
         # :systemwide => Bool, unfortunately, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
-        :install_location => [mktempdir(), mktempdir(), "~/foo/bar"], # Tuple sampling is missing in julia 1.0
+        :install_location => [mktempdir(), mktempdir(), joionpath("~","foo1729","bar")], # Tuple sampling is missing in julia 1.0
         # bin => untested
         :dry_run => Bool,
         :verbose => Bool]
@@ -255,8 +255,6 @@ if ("CI" => "true") ∈ ENV
     # by masking julia-1.5
     @test update_julia("1.5", systemwide=true) == v"1.5.4"
 
-    mkdir("$(ENV["HOME"])/foo1729")
-    mkdir("$(ENV["HOME"])/foo1729/bar")
     random_matrix_test(4) # Small
     random_matrix_test(15) # Big
 
