@@ -166,6 +166,9 @@ function update_julia(version::AbstractString="";
     dry_run = false,
     verbose = dry_run)
 
+    install_location = expanduser(install_location) # Issue #23
+    bin = bin === nothing ? nothing : expanduser(bin)
+
     @static VERSION >= v"1.1" && verbose && display(Base.@locals)
     @static Sys.iswindows() && bin !== nothing && (println("bin not supported for windows"); bin=nothing)
 
