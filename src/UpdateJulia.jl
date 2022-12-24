@@ -265,6 +265,7 @@ function extract(install_location, download_file, v)
     @static if Sys.isapple()
         run(`hdiutil attach $download_file`)
         volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
+        isempty(volumes) && throw(AssertionError(join(readdir("/Volumes"), "\n") + "\n No volumes found for $v"))
         folder = last(volumes)
         try
             cp("/Volumes/$folder/Julia-$(v.major).$(v.minor).app", "$install_location/$folder.app", force=true)
