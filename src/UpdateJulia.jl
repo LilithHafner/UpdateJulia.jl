@@ -264,7 +264,8 @@ function extract(install_location, download_file, v, isnightly)
 
     @static if Sys.isapple()
         run(`hdiutil attach $download_file`)
-        volumes = filter(startswith("Julia-$(isnightly ? "" : v)"), readdir("/Volumes"))
+        prefix = "Julia-$(isnightly ? "" : v)" # not using `startswith(prefix)` for compat with < Julia 1.5
+        volumes = filter(x -> startswith(x, prefix), readdir("/Volumes"))
         println(v, " ", isnightly)
         isempty(volumes) && throw(AssertionError(join(readdir("/Volumes"), "\n") * "\n No volumes found for $v"))
         folder = last(volumes)
