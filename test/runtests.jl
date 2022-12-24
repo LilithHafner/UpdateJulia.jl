@@ -94,6 +94,8 @@ function random_matrix_test(n)
     versions = vcat(UpdateJulia.nightly_version[], filter!(collect(keys(UpdateJulia.versions[]))) do x
         x >= (Sys.iswindows() ? v"1.5.0-rc2" : v"1.0.0")
     end)
+    mkdir("$(ENV["HOME"])/foo")
+    mkdir("$(ENV["HOME"])/foo/bar")
     keywords = [
         # os_str => untested
         # arch => untested
@@ -105,7 +107,7 @@ function random_matrix_test(n)
         # url => untested
         # aliases => untested
         # :systemwide => Bool, unfortunately, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
-        :install_location => [mktempdir(), mktempdir()], # Tuple sampling is missing in julia 1.0
+        :install_location => [mktempdir(), mktempdir(), "~/foo/bar"], # Tuple sampling is missing in julia 1.0
         # bin => untested
         :dry_run => Bool,
         :verbose => Bool]
@@ -150,6 +152,7 @@ function random_matrix_test(n)
 
 
     @testset "check" begin
+        @test !isdir("~")
         for c in commands
             cvs = c[7:end]
             installed = filter(installed_versions) do x
