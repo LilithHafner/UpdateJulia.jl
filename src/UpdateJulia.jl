@@ -192,7 +192,7 @@ function update_julia(version::AbstractString="";
     dry_run && (println("aborting before download & install"); return v)
     executable = try
         download_delete(url) do file
-            extract(install_location, file, v, version==nightly)
+            extract(install_location, file, v, version=="nightly")
         end
     catch x
         if x isa Base.IOError && systemwide && occursin("permission denied", x.msg)
