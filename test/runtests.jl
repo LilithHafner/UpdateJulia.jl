@@ -105,7 +105,7 @@ function random_matrix_test(n)
         # url => untested
         # aliases => untested
         # :systemwide => Bool, unfortunately, we can't do this trivially because userspace installs choose not to overwrite systemwide installs
-        :install_location => [mktempdir(), mktempdir(), joionpath("~","foo1729","bar")], # Tuple sampling is missing in julia 1.0
+        :install_location => [mktempdir(), mktempdir(), joinpath("~","foo1729","bar")], # Tuple sampling is missing in julia 1.0
         # bin => untested
         :dry_run => Bool,
         :verbose => Bool]
