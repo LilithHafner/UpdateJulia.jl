@@ -94,8 +94,6 @@ function random_matrix_test(n)
     versions = vcat(UpdateJulia.nightly_version[], filter!(collect(keys(UpdateJulia.versions[]))) do x
         x >= (Sys.iswindows() ? v"1.5.0-rc2" : v"1.0.0")
     end)
-    mkdir("$(ENV["HOME"])/foo")
-    mkdir("$(ENV["HOME"])/foo/bar")
     keywords = [
         # os_str => untested
         # arch => untested
@@ -254,6 +252,8 @@ if ("CI" => "true") ∈ ENV
     # by masking julia-1.5
     @test update_julia("1.5", systemwide=true) == v"1.5.4"
 
+    mkdir("$(ENV["HOME"])/foo1729")
+    mkdir("$(ENV["HOME"])/foo1729/bar")
     random_matrix_test(4) # Small
     random_matrix_test(15) # Big
 
