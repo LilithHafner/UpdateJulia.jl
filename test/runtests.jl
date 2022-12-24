@@ -169,7 +169,7 @@ function random_matrix_test(n)
                 # If inexact, and cvs is a complete version string, don't match
                 try string(VersionNumber(cvs)) == cvs && return false catch end
                 # Otherwise match if prefix
-                UptadeJulia.isconsistent(xs, cvs)
+                UpdateJulia.isconsistent(xs, cvs)
             end
             actual = UpdateJulia.version_of(c)
             for i in installed
