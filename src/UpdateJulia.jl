@@ -409,7 +409,7 @@ end
 
 ## Test ##
 function report(commands, v)
-    successes = filter(c->version_of(c)==v, commands)
+    successes = filter(c->version_of(c)===v, commands)
     @assert !isempty(successes)
     printstyled("Success! \`$(join(successes, "\` & \`"))\` now to point to $v\n", color=:green)
 end
