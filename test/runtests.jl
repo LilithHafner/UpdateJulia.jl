@@ -38,9 +38,19 @@ end
     @test UpdateJulia.prefer(v"1.7.0-rc1", missing)
 end
 
+@testset "isconsistent()" begin
+    @test !UpdateJulia.isconsistent("1.10.0-DEV.1729", "1.1")
+    @test UpdateJulia.isconsistent("1.10.0-DEV.1729", "1.10")
+    @test UpdateJulia.isconsistent("1.10.0-DEV.1729", "")
+    @test UpdateJulia.isconsistent("3.0.6", "3.0")
+    @test UpdateJulia.isconsistent("3.0.6", "3.0.6")
+    @test !UpdateJulia.isconsistent("3.0.62", "3.0.6")
+end
+
 @testset "latest()" begin
     @test UpdateJulia.latest() >= v"1.7.0"
     @test UpdateJulia.latest().prerelease == ()
+    @test UpdateJulia.latest("1.1") == v"1.1.1"
     @test UpdateJulia.latest("1.1.") == v"1.1.1"
     @test UpdateJulia.latest("1.5") == v"1.5.4"
     @test UpdateJulia.latest("1.2") == v"1.2.0"

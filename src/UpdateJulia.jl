@@ -50,8 +50,16 @@ end
 is_stable(v::VersionNumber) = isempty(v.prerelease)
 is_nightly(v::VersionNumber) = v.prerelease == ("DEV",)
 
+function isconsistent(version, prefix)
+    startswith(version, prefix) || return false
+    # if the last digit of the prefix is a number and so is the next, then the number has
+    # been extended. This is bad and inconsistent (e.g. 1.1 is not 1.10).
+    0 < lastindex(prefix) < lastindex(version) || return true
+    return !(isdigit(version[lastindex(prefix)]) && isdigit(version[lastindex(prefix)+1]))
+end
+
 function latest(prefix="")
-    kys = collect(filter(v->startswith(string(v), prefix), keys(versions[])))
+    kys = collect(filter(v->isconsistent(string(v), prefix), keys(versions[])))
     isempty(kys) && throw(ArgumentError("No released versions starting with \"$prefix\""))
     partialsort!(kys, 1, lt=prefer)
 end
