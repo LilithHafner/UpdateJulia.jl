@@ -203,7 +203,7 @@ function update_julia(version::AbstractString="";
     dry_run && (println("aborting before download & install"); return v)
     executable = try
         download_delete(url) do file
-            extract(install_location, file, v)
+            extract(install_location, file, v, version=="nightly")
         end
     catch x
         if x isa Base.IOError && systemwide && occursin("permission denied", x.msg)
@@ -270,12 +270,15 @@ function download_delete(f, url)
 end
 
 ## Extract ##
-function extract(install_location, download_file, v)
+function extract(install_location, download_file, v, isnightly)
     isdir(install_location) || (println("Making path to $install_location"); mkpath(install_location))
 
     @static if Sys.isapple()
         run(`hdiutil attach $download_file`)
-        volumes = filter(x->startswith(x, "Julia-$v"), readdir("/Volumes"))
+        prefix = "Julia-$(isnightly ? "" : v)" # not using `startswith(prefix)` for compat with < Julia 1.5
+        volumes = filter(x -> startswith(x, prefix), readdir("/Volumes"))
+        println(v, " ", isnightly)
+        isempty(volumes) && throw(AssertionError(join(readdir("/Volumes"), "\n") * "\n No volumes found for $v"))
         folder = last(volumes)
         try
             cp("/Volumes/$folder/Julia-$(v.major).$(v.minor).app", "$install_location/$folder.app", force=true)
