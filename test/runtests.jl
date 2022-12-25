@@ -122,7 +122,8 @@ function random_matrix_test(n)
                     push!(installed_versions, v_inst)
                 end
             catch x
-                if x isa ProcessFailedException && ((:migrate_packages => :force) ∈ kw || (:migrate_packages => true) ∈ kw)
+                if x isa (VERSION < v"1.2.0-rc1" ? ErrorException : ProcessFailedException) &&
+                        ((:migrate_packages => :force) ∈ kw || (:migrate_packages => true) ∈ kw)
                     v = UpdateJulia.latest(version)
                     if (v.major, v.minor) < (VERSION.major, VERSION.minor)
                         # Package migratoin requires Pkg at version to be compatible with
