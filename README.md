@@ -7,7 +7,7 @@
 
 ## Simple cross platform julia installer
 
-Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows.
+Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows. See comparrison at the botom of this file.
 
 Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads.
 
@@ -114,3 +114,20 @@ Mac    | `/Applications` | `/usr/local/bin`                          | `~/Applic
 Windows| `\Program Files`| automatically add install location to path| `~\AppData\Local\Programs`| automatically add install location to path
 
 \* Unix has somewhat loose conventions for install locations. If you already have Julia installed in a location that falls within those conventions, UpdateJulia will install the new version of Julia right next to the one you are currently using.
+
+## Comparison with alternatives
+
+&nbsp; | [UpdateJulia.jl](https://github.com/LilithHafner/UpdateJulia.jl) | [juliaup](https://github.com/JuliaLang/juliaup) | [jill](https://github.com/abelsiqueira/jill) | [Manual Installation](https://julialang.org/downloads/)
+--|--|--|--|--
+Official Julia Installer | :x: | :white_check_mark: | :x: | :white_check_mark:
+Automatically retrieves the latest Julia version | :white_check_mark: | :x: | :white_check_mark: | :white_check_mark:
+Can install julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+Cross Platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
+Can handle multiple versions | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark:
+No startup latency | :white_check_mark: | Negligible | :white_check_mark: | :white_check_mark:
+Available on the Windows Store | :x: | :white_check_mark: | :x: | :x:
+Installer Language | Julia | Rust | Shell | N/A
+How to intall the installer | Julia's Pkg | Shell command | Shell command | N/A
+Maintained | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+Under active development | :x: | :white_check_mark: | :x: | :white_check_mark:
+Maintainers | [@LilithHafner](https://github.com/LilithHafner) | [@davidanthoff](https://github.com/davidanthoff) (with [JuliaLang](https://github.com/JuliaLang) as backup) | [@abelsiqueira](https://github.com/abelsiqueira) | [JuliaLang](https://github.com/JuliaLang)
