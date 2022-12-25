@@ -120,7 +120,7 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 &nbsp; | [UpdateJulia.jl](https://github.com/LilithHafner/UpdateJulia.jl) | [juliaup](https://github.com/JuliaLang/juliaup) | [jill](https://github.com/abelsiqueira/jill) | [Manual Installation](https://julialang.org/downloads/)
 --|--|--|--|--
 Official Julia Installer | :x: | :white_check_mark: | :x: | :white_check_mark:
-Can update to the latest version Julia without updating the installer | :white_check_mark: | :x: | :white_check_mark: | :white_check_mark:
+Can update to the latest version Julia without updating the installer | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Can install julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Cross Platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
 Can handle multiple versions | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark:
