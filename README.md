@@ -122,6 +122,7 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 Official Julia Installer | :x: | :white_check_mark: | :x: | :white_check_mark:
 Can update to the latest version Julia without updating the installer | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Can install julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+Supports nightlies | :white_check_mark: | :x: | :white_check_mark: | :white_check_mark:
 Cross Platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
 Can handle multiple versions | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark:
 No startup latency | :white_check_mark: | Negligible | :white_check_mark: | :white_check_mark:
