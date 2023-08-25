@@ -7,7 +7,7 @@
 
 ## Simple cross platform julia installer
 
-Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows. See comparrison at the botom of this file.
+Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows. See comparison at the bottom of this file.
 
 Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads.
 
@@ -23,19 +23,19 @@ update_julia()
 julia> update_julia()
 installing the latest version of julia: 1.7.0
 ...
-Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0
+Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0.
 v"1.7.0"
 
 julia> update_julia("1.4") # old
 installing julia 1.4.2
-This version is out of date. The latest official release is 1.7.0
+This version is out of date. The latest official release is 1.7.0.
 ...
 Success! `julia-1.4.2` & `julia-1.4` now to point to 1.4.1
 v"1.4.2"
 
 julia> update_julia("1.7.0-rc3") # release candidate
 installing julia 1.7.0-rc3
-This version is out of date. The latest official release is 1.7.0
+This version is out of date. The latest official release is 1.7.0.
 ...
 Success! `julia-1.7.0-rc3` now to point to 1.7.0-rc3
 v"1.7.0-rc3"
@@ -43,8 +43,8 @@ v"1.7.0-rc3"
 julia> update_julia("1.8") # nightly, update_julia("nightly") also works
 installing julia 1.8.0-DEV
 This version is an experimental development build not recommended for most users. The latest
-official release is 1.7.0
-Success! `julia-1.8` & `julia-1.8.0-DEV` now to point to 1.8.0-DEV
+official release is 1.7.0.
+Success! `julia-1.8` & `julia-1.8.0-DEV` now to point to 1.8.0-DEV.
 v"1.8.0-DEV"
 ```
 
@@ -60,7 +60,7 @@ search: update_julia
   If version is provided, installs the latest version that starts with version. If version
   == "nightly", then installs the bleeding-edge nightly version.
 
-  Keyword Arguments
+  Keyword arguments
   ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
   Behavior flags
@@ -117,17 +117,17 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 
 ## Comparison with alternatives
 
-&nbsp; | [UpdateJulia.jl](https://github.com/LilithHafner/UpdateJulia.jl) | [juliaup](https://github.com/JuliaLang/juliaup) | [jill](https://github.com/abelsiqueira/jill) | [Manual Installation](https://julialang.org/downloads/)
+&nbsp; | [UpdateJulia.jl](https://github.com/LilithHafner/UpdateJulia.jl) | [juliaup](https://github.com/JuliaLang/juliaup) | [jill](https://github.com/abelsiqueira/jill) | [Manual installation](https://julialang.org/downloads/)
 --|--|--|--|--
 Official Julia Installer | :x: | :white_check_mark: | :x: | :white_check_mark:
 Can update to the latest version Julia without updating the installer | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Can install julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
-Cross Platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
+Cross-platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
 Can handle multiple versions | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark:
 No startup latency | :white_check_mark: | Negligible | :white_check_mark: | :white_check_mark:
 Available on the Windows Store | :x: | :white_check_mark: | :x: | :x:
 Installer Language | Julia | Rust | Shell | N/A
-How to intall the installer | Julia's Pkg | Shell command | Shell command | N/A
+How to install the installer | Julia's Pkg | Shell command | Shell command | N/A
 Maintained | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Under active development | :x: | :white_check_mark: | :x: | :white_check_mark:
 Maintainers | [@LilithHafner](https://github.com/LilithHafner) | [@davidanthoff](https://github.com/davidanthoff) (with [JuliaLang](https://github.com/JuliaLang) as backup) | [@abelsiqueira](https://github.com/abelsiqueira) | [JuliaLang](https://github.com/JuliaLang)
