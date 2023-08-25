@@ -122,11 +122,12 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 Official Julia installer | :x: | :white_check_mark: | :x: | :white_check_mark:
 Can update to the latest version Julia without updating the installer | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Can install Julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+Supports nightlies | :white_check_mark: | :x: | :white_check_mark: | :white_check_mark:
 Cross-platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
 Can handle multiple versions | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark:
 No startup latency | :white_check_mark: | Negligible | :white_check_mark: | :white_check_mark:
 Available on the Windows Store | :x: | :white_check_mark: | :x: | :x:
-Installer Language | Julia | Rust | Shell | N/A
+Installer language | Julia | Rust | Shell | N/A
 How to install the installer | Julia's Pkg | Shell command | Shell command | N/A
 Maintained | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Under active development | :x: | :white_check_mark: | :x: | :white_check_mark:
