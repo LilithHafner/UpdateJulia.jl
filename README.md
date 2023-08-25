@@ -5,11 +5,11 @@
 [![Build Status](https://github.com/LilithHafner/UpdateJulia.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/LilithHafner/UpdateJulia.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/LilithHafner/UpdateJulia.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/LilithHafner/UpdateJulia.jl)
 
-## Simple cross platform julia installer
+## Simple cross platform Julia installer
 
-Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows. See comparison at the bottom of this file.
+Please also consider using [Juliaup](https://github.com/JuliaLang/juliaup), especially for Windows. See comparison at the bottom of this file.
 
-Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads.
+Note: this is a Julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads.
 
 ## Usage
 ```jl
@@ -23,19 +23,19 @@ update_julia()
 julia> update_julia()
 installing the latest version of julia: 1.7.0
 ...
-Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0.
+Success! `julia-1.7.0` & `julia-1.7` & `julia` now to point to 1.7.0
 v"1.7.0"
 
 julia> update_julia("1.4") # old
 installing julia 1.4.2
-This version is out of date. The latest official release is 1.7.0.
+This version is out of date. The latest official release is 1.7.0
 ...
 Success! `julia-1.4.2` & `julia-1.4` now to point to 1.4.1
 v"1.4.2"
 
 julia> update_julia("1.7.0-rc3") # release candidate
 installing julia 1.7.0-rc3
-This version is out of date. The latest official release is 1.7.0.
+This version is out of date. The latest official release is 1.7.0
 ...
 Success! `julia-1.7.0-rc3` now to point to 1.7.0-rc3
 v"1.7.0-rc3"
@@ -44,7 +44,7 @@ julia> update_julia("1.8") # nightly, update_julia("nightly") also works
 installing julia 1.8.0-DEV
 This version is an experimental development build not recommended for most users. The latest
 official release is 1.7.0.
-Success! `julia-1.8` & `julia-1.8.0-DEV` now to point to 1.8.0-DEV.
+Success! `julia-1.8` & `julia-1.8.0-DEV` now to point to 1.8.0-DEV
 v"1.8.0-DEV"
 ```
 
