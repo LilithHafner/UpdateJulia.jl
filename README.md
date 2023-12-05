@@ -5,11 +5,11 @@
 [![Build Status](https://github.com/LilithHafner/UpdateJulia.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/LilithHafner/UpdateJulia.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/LilithHafner/UpdateJulia.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/LilithHafner/UpdateJulia.jl)
 
-## Simple cross platform julia installer
+## Simple cross platform Julia installer
 
-Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows. See comparrison at the botom of this file.
+Please also consider using [JuliaUp](https://github.com/JuliaLang/juliaup), especially for Windows. See comparison at the bottom of this file.
 
-Note: this is a julia package that requires julia 1.0 or higher to run. If you would like to install julia and don't have at least julia 1.0 installed already, please visit https://julialang.org/downloads.
+Note: this is a Julia package that requires Julia 1.0 or higher to run. If you would like to install Julia and don't have at least Julia 1.0 installed already, please visit https://julialang.org/downloads.
 
 ## Usage
 ```jl
@@ -121,14 +121,14 @@ Windows| `\Program Files`| automatically add install location to path| `~\AppDat
 --|--|--|--|--
 Official Julia Installer | :x: | :white_check_mark: | :x: | :white_check_mark:
 Can update to the latest version Julia without updating the installer | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
-Can install julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
+Can install Julia for the first time | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Supports nightlies | :white_check_mark: | :x: | :white_check_mark: | :white_check_mark:
 Cross Platform | :white_check_mark: | :white_check_mark: | Linux Only | :white_check_mark:
 Can handle multiple versions | :white_check_mark: | :white_check_mark: | :x: | :white_check_mark:
 No startup latency | :white_check_mark: | Negligible | :white_check_mark: | :white_check_mark:
 Available on the Windows Store | :x: | :white_check_mark: | :x: | :x:
 Installer Language | Julia | Rust | Shell | N/A
-How to intall the installer | Julia's Pkg | Shell command | Shell command | N/A
+How to install the installer | Julia's Pkg | Shell command | Shell command | N/A
 Maintained | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:
 Under active development | :x: | :white_check_mark: | :x: | :white_check_mark:
 Maintainers | [@LilithHafner](https://github.com/LilithHafner) | [@davidanthoff](https://github.com/davidanthoff) (with [JuliaLang](https://github.com/JuliaLang) as backup) | [@abelsiqueira](https://github.com/abelsiqueira) | [JuliaLang](https://github.com/JuliaLang)
