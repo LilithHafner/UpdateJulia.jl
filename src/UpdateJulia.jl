@@ -116,7 +116,7 @@ function v_url(version_str, os_str, arch_str, prefer_gui)
         os_append = os_str == "winnt" ? "win" : os_str
         extension = @static Sys.iswindows() ?  (prefer_gui ? "exe" : "zip") : (@static Sys.isapple() ?  "dmg" : "tar.gz")
 
-        nightly_version[], "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append$arch_append.$extension"
+        nightly_version[], "https://julialangnightlies-s3.julialang.org/bin/$os_str/$arch_dir/julia-latest-$os_append-$arch_append.$extension"
     else
         v = latest(version_str)
         v == nightly_version[] && return v_url("nightly", os_str, arch_str, prefer_gui)
