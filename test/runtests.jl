@@ -243,13 +243,13 @@ if ("CI" => "true") ∈ ENV
         old_1_5_0 = UpdateJulia.version_of("julia-1.5.0")
         @test update_julia("1.5.0-", systemwide=true, migrate_packages=:force, verbose=true) == v"1.5.0-rc2"
         @test UpdateJulia.version_of("julia-1.5.0") === old_1_5_0
-        # Manifest.toml is not neccessarily created until we migrate with force.
+        # Manifest.toml is not necessarily created until we migrate with force.
         @test isfile(joinpath(first(Base.DEPOT_PATH), "environments", "v1.5", "Manifest.toml"))
         @test update_julia("1.5.0", systemwide=false, migrate_packages=:force, verbose=true) == v"1.5.0"
         @test UpdateJulia.@os(
             # windows doesn't use a bin, and it's only the user path we are reordering.
             UpdateJulia.version_of("julia-1.5") == v"1.5.0",
-            # can't overwite the old installation because it was systemwide
+            # can't overwrite the old installation because it was systemwide
             UpdateJulia.version_of("julia-1.5") == v"1.5.0-rc2",
             # system bin may come after user bin, so we have to specify the bin
             UpdateJulia.version_of("/usr/local/bin/julia-1.5") == v"1.5.0-rc2"
