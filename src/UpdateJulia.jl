@@ -112,7 +112,7 @@ end
 function v_url(version_str, os_str, arch_str, prefer_gui)
     if version_str == "nightly"
         arch_dir = arch_str == "aarch64" ? "aarch64" : "x$(Sys.WORD_SIZE)"
-        arch_append = arch_str == "aarch64" ? "aarch64" : "$(Sys.WORD_SIZE)"
+        arch_append = arch_str == "aarch64" ? "-aarch64" : "$(Sys.WORD_SIZE)"
         os_append = os_str == "winnt" ? "win" : os_str
         extension = @static Sys.iswindows() ?  (prefer_gui ? "exe" : "zip") : (@static Sys.isapple() ?  "dmg" : "tar.gz")
 
