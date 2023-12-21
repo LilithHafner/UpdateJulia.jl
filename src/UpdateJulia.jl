@@ -152,14 +152,14 @@ Destination
 $(Sys.iswindows() ? "" : "- `bin = systemwide ? \"/usr/local/bin\" : \"$(joinpath(homedir(), ".local/bin"))\"` directory to store links to the binaries")
 
 Source
-- `os_str = "$(@os "winnt" "mac" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
+- `os_str = "$(@os "winnt" "macos" "freebsd" "linux")"` string representation of the operating system: "linux", "mac", "winnt", or "freebsd".
 - `arch = "$(string(Base.Sys.ARCH))"` string representation of the CPU architecture: "x86_64", "i686", "aarch64", "armv7l", or "powerpc64le".
 
 - `v = ...` the `VersionNumber` to install
 - `url = ...` URL to download that version from, if you explicitly set `url`, also explicitly set `v` lest they differ
 """
 function update_julia(version::AbstractString="";
-    os_str = (@os "winnt" "mac" "freebsd" "linux"),
+    os_str = (@os "winnt" "macos" "freebsd" "linux"),
     arch = string(Base.Sys.ARCH),
     prefer_gui = false,
     fetch = time() > last_fetched[] + 60 * 15, # 15 minutes
